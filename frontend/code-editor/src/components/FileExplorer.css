@@ -1,0 +1,112 @@
+.file-explorer {
+    background-color: #1E1E1E;
+    /* Dark background color */
+    color: #D4D4D4;
+    /* Light text color */
+    width: 250px;
+    /* Sidebar width */
+    height: 85vh;
+    /* Full height */
+    font-family: 'Consolas', 'Monaco', monospace;
+    /* Monospaced font for code */
+    font-size: 14px;
+    /* Adjust to match the screenshot */
+    overflow-y: auto;
+    /* Add scroll to the sidebar */
+}
+
+.file-item {
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    /* Light dark line to separate rows */
+}
+
+.file-item.file {
+    padding-left: 20px;
+    /* Indent for files */
+}
+
+.file-item.folder {
+    padding-left: 10px;
+    /* Less indent for folders */
+}
+
+.nested {
+    padding-left: 20px;
+    /* Additional indent for nested items */
+    display: block;
+}
+
+.icon-folder-o:before,
+.icon-folder-open-o:before,
+.icon-file-code-o:before {
+    padding-right: 5px;
+}
+
+/* Assuming you use FontAwesome for icons */
+.icon-folder-o:before {
+    content: '\f114';
+    /* folder icon */
+}
+
+.icon-folder-open-o:before {
+    content: '\f115';
+    /* folder open icon */
+}
+
+.icon-file-code-o:before {
+    content: '\f1c9';
+    /* file code icon */
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+}
+
+.icon-plus:before {
+    content: '\f067';
+    /* plus icon */
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.icon-trash:before {
+    content: '\f1f8';
+    /* trash icon */
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.file-item .actions {
+    display: none;
+    /* Hide actions by default */
+}
+
+.file-item:hover .actions {
+    display: block;
+    /* Show actions on hover */
+}
+
+.nested {
+    margin-left: 20px;
+    /* Indent nested items for a tree structure */
+}
+
+.fa-folder,
+.fa-folder-open,
+.fa-file-code-o {
+    width: 1em;
+    /* Ensure icons are evenly spaced */
+    text-align: center;
+}
+
+.fa-plus,
+.fa-trash {
+    margin-left: 10px;
+    cursor: pointer;
+}

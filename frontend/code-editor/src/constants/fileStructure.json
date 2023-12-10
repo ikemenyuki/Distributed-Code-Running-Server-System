@@ -1,0 +1,43 @@
+[
+    {
+        "type": "file",
+        "name": "index.js"
+    },
+    {
+        "type": "file",
+        "name": "README.md"
+    },
+    {
+        "type": "file",
+        "name": ".gitignore"
+    },
+    {
+        "type": "folder",
+        "name": "src",
+        "children": [
+            {
+                "type": "file",
+                "name": "App.js"
+            },
+            {
+                "type": "file",
+                "name": "index.js"
+            }
+        ]
+    },
+    {
+        "type": "folder",
+        "name": "public",
+        "children": [
+            {
+                "type": "file",
+                "name": "index.html"
+            }
+        ]
+    },
+    {
+        "type": "folder",
+        "name": "styles",
+        "children": []
+    }
+]
