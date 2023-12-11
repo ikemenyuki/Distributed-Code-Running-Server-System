@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './FileExplorer.css';
+import '../css/FileExplorer.css';
 import initialFileStructure from '../constants/fileStructure';
 
 const FileExplorer = () => {

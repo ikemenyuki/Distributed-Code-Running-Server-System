@@ -1,11 +1,11 @@
 .file-explorer {
-    background-color: #1E1E1E;
+    background-color: #1C1C1C;
     /* Dark background color */
     color: #D4D4D4;
     /* Light text color */
     width: 250px;
     /* Sidebar width */
-    height: 85vh;
+    height: calc(100vh - 80px);
     /* Full height */
     font-family: 'Consolas', 'Monaco', monospace;
     /* Monospaced font for code */
@@ -13,6 +13,7 @@
     /* Adjust to match the screenshot */
     overflow-y: auto;
     /* Add scroll to the sidebar */
+    /* border: 1px solid #ccc; */
 }
 
 .file-item {

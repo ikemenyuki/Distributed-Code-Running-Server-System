@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from "react";
-import CodeEditor from "./CodeEditor";
 import axios from "axios";
-// import { classnames } from "../utils/general";
 import { languageOptions } from "../constants/languageOptions";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// import { defineTheme } from "../lib/defineTheme";
 import useKeyPress from "../hooks/useKeyPress";
-import FileExplorer from "./FileExplorer";
-// import Footer from "./Footer";
-// import OutputWindow from "./OutputWindow";
-// import CustomInput from "./CustomInput";
-// import OutputDetails from "./OutputDetails";
-// import ThemeDropdown from "./ThemeDropdown";
-// import LanguagesDropdown from "./LanguagesDropdown";
+import Code from "./Code";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Homepage from "./Homepage";
+import Signup from "./Signup";
+import Signin from "./Signin";
+import Navbar from './Navbar';
 
 const javascriptDefault = `/**
 * Problem: Binary Search: Search a sorted array for a target value.
@@ -202,83 +198,25 @@ const Landing = () => {
     };
 
     return (
-        <>
-            <ToastContainer
-                position="top-right"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />
-            <div className="h-4 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500"></div>
-            <div className="flex flex-row">
-                {/* <div className="px-4 py-2">
-                    <LanguagesDropdown onSelectChange={onSelectChange} />
-                </div> */}
-                {/* <div className="px-4 py-2">
-                    <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
-                </div> */}
-            </div>
-            <div style={{
-                display: 'flex',
-                // height: '100vh', // Assuming you want the app to fill the full height
-            }}>
-                <FileExplorer />
-                <div style={{
-                    flex: 1, // This will make the code editor take up the rest of the space
-                    display: 'flex', // Make sure this container is also a flex container
-                    flexDirection: 'column', // Stack children vertically
-                    justifyContent: 'flex-start', // Align children to the start of the cross axis
-                    alignItems: 'flex-end', // Align children to the end of the main axis
-                    height: '100%', // Take full height of its parent
-                    width: '100%' // Take full width of its parent
-                }}>
-                    <CodeEditor
-                        code={code}
-                        onChange={onChange}
-                        language={language?.value}
-                        theme={theme}
-                    />
-                </div>
-            </div>
-            {/* <Sidebar /> */}
-            {/* <div className="flex flex-row space-x-4 items-start px-4 py-4">
-                <div className="flex flex-col w-full h-full justify-start items-end">
-                    <CodeEditor
-                        code={code}
-                        onChange={onChange}
-                        language={language?.value}
-                        theme={theme}
-                    />
-                </div> */}
-
-            {/* <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-                    <OutputWindow outputDetails={outputDetails} />
-                    <div className="flex flex-col items-end">
-                        <CustomInput
-                            customInput={customInput}
-                            setCustomInput={setCustomInput}
+        <Router>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Homepage />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/signin" element={<Signin />} />
+                <Route
+                    path="/code-editor"
+                    element={
+                        <Code
+                            code={code}
+                            onChange={onChange}
+                            language={language}
+                            theme={theme}
                         />
-                        <button
-                            onClick={handleCompile}
-                            disabled={!code}
-                            className={classnames(
-                                "mt-4 border-2 border-black z-10 rounded-md shadow-[5px_5px_0px_0px_rgba(0,0,0)] px-4 py-2 hover:shadow transition duration-200 bg-white flex-shrink-0",
-                                !code ? "opacity-50" : ""
-                            )}
-                        >
-                            {processing ? "Processing..." : "Compile and Execute"}
-                        </button>
-                    </div>
-                    {outputDetails && <OutputDetails outputDetails={outputDetails} />}
-                </div> */}
-            {/* </div> */}
-            {/* <Footer /> */}
-        </>
+                    }
+                />
+            </Routes>
+        </Router>
     );
 };
 export default Landing;

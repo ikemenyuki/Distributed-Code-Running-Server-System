@@ -1,14 +1,14 @@
-import logo from './logo.svg';
 import './App.css';
 import Landing from './components/Landing';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
+    <AuthProvider>
+      <div className="App">
         <Landing />
-      </header>
-    </div>
+      </div>
+    </AuthProvider>
   );
 }
 
