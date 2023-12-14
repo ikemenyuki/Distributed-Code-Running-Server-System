@@ -11,7 +11,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Homepage from "./Homepage";
 import Signup from "./Signup";
 import Signin from "./Signin";
-import Navbar from './Navbar';
+import Navbar from './NavBar';
 
 const javascriptDefault = `/**
 * Problem: Binary Search: Search a sorted array for a target value.
