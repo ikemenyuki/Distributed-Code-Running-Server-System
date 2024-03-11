@@ -25,14 +25,12 @@ func HttpSaveFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the file
-	fmt.Print(structure.UserEmail, structure.Name, structure.Content)
 	filePath := structure.UserEmail + "/" + structure.Name
 	err = utils.OpenOrCreateFile(filePath, structure.Content)
 	if err != nil {
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "File uploaded successfully: %s", filePath)
 }

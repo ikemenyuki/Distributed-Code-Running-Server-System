@@ -26,8 +26,10 @@ const Code = ({ code, setCode, language, theme }) => {
         const filename = fileName || prompt('Enter a filename:'); // Prompt the user for a filename
         if (!filename) return; // If the user cancels, return early
         setFileName(filename); // Set the filename state
-        const data = await saveCode(currentUser.email, filename, code, language.value);
-        console.log(data); // Log the response data
+        const ok = await saveCode(currentUser.email, filename, code, language.value);
+        if (ok) {
+            // call exec api
+        }
     }
 
     return (

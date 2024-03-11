@@ -40,8 +40,9 @@ const saveCode = async (userEmail, filename, body, language) => {
         })
 
     });
-    const data = await response.json();
-    return data;
+    // get the response header
+    const status = response.status;
+    return status === 200 ? true : false;
 }
 
 const loadCode = async (filename) => {
