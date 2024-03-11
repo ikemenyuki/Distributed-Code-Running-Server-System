@@ -1,31 +1,25 @@
 
 const BACKEND_URL = 'http://localhost:8085';
 
-const sendCodeToExec = async (filename) => {
-    const execPath = '/api/execute';
-    const url = new URL(BACKEND_URL + execPath);
-    url.searchParams.append('filename', filename);
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET'
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error executing file:', error);
-        return null;
-    }
+const execCode = async (userEmail, filename) => {
+    const savePath = '/api/save';
+    const response = await fetch(BACKEND_URL + savePath, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            userEmail: userEmail,
+            name: filename,
+        })
+    });
+    // get the response header
+    const data = await response.json();
+    return data;
 }
 
 
 const saveCode = async (userEmail, filename, body, language) => {
-    console.log('saveCode', userEmail, filename, body, language);
     const savePath = '/api/save';
     const response = await fetch(BACKEND_URL + savePath, {
         method: 'POST',

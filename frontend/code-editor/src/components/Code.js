@@ -5,13 +5,13 @@ import CodeEditor from "./CodeEditor";
 import FileExplorer from "./FileExplorer";
 import FriendsList from "./FriendsList";
 import RunButton from "./RunButton";
-import { saveCode } from "../utils/api";
+import { saveCode, execCode } from "../utils/api";
 import Terminal from "./Terminal";
 
 const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
     const [result, setResult] = useState(''); // State to store the result of the code execution
-    const [openTerminal, setOpenTerminal] = useState(true); // State to control the visibility of the terminal
+    const [openTerminal, setOpenTerminal] = useState(false); // State to control the visibility of the terminal
     const [fileName, setFileName] = useState('');
     const navigate = useNavigate();
 
@@ -38,7 +38,10 @@ const Code = ({ code, setCode, language, theme }) => {
         const ok = await saveCode(currentUser.email, filename, code, language.value);
         if (ok) {
             // call exec api
-            // setResult(result); // Clear the result state
+            const res = await execCode(currentUser.email, filename);
+            const resBody = await res.json();
+            setResult(resBody['output']);
+            setOpenTerminal(true);
         }
     }
 
