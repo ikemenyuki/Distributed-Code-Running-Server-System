@@ -1,6 +1,6 @@
 module github.com/ikemenyuki/Distributed-Code-Running-Server-System/backend
 
-go 1.21.5
+go 1.20
 
 require (
 	github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1

@@ -36,6 +36,7 @@ func makeAPI(
 	api.Path("/notebook/{name:.+}/setcontent").HandlerFunc(httphandler.ApiNotebookSetContentHandler(nbRegistry, csrfService))
 	api.Path("/notebook/{name:.+}/exec").HandlerFunc(httphandler.ApiNotebookExecHandler(nbRegistry, csrfService, useDocker))
 	api.Path("/notebook/{name:.+}/stop").HandlerFunc(httphandler.ApiNotebookStopHandler(nbRegistry, csrfService))
+	api.Path("/notebook/getFiles").HandlerFunc(httphandler.ApiNotebookgetAllFilesHandler(nbRegistry, csrfService)).Methods("GET")
 
 	// root.PathPrefix("/").Handler(fs)
 

@@ -1,15 +1,18 @@
 [
     {
         "type": "file",
-        "name": "index.js"
+        "name": "index.js",
+        "content": "// start writing code here..."
     },
     {
         "type": "file",
-        "name": "README.md"
+        "name": "README.md",
+        "content": "here is README.md file"
     },
     {
         "type": "file",
-        "name": ".gitignore"
+        "name": ".gitignore",
+        "content": "here is .gitignore file"
     },
     {
         "type": "folder",

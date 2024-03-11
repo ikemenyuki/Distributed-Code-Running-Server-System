@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"path"
 )
 
@@ -12,6 +13,15 @@ type Notebook interface {
 	SetMtime(mtime string)
 	GetRecipe() Recipe
 	GetMainFileAbsPath() string
+	GetDirectoryAbsPath() string
+}
+
+// FileStructure defines the structure of the files and folders
+type FileStructure struct {
+	Type     string          `json:"type"`
+	Name     string          `json:"name"`
+	Content  string          `json:"content,omitempty"`
+	Children []FileStructure `json:"children,omitempty"`
 }
 
 func MakeNotebookReal(notebookname, absdir, mtime string, recipe Recipe) NotebookReal {
@@ -66,4 +76,10 @@ func (n NotebookReal) MarshalJSON() ([]byte, error) {
 
 func (n NotebookReal) GetMainFileAbsPath() string {
 	return path.Join(n.absdir, n.recipe.GetMainfile())
+}
+
+func (n *NotebookReal) GetDirectoryAbsPath() string {
+	path := path.Join(n.GetAbsdir(), n.GetRecipe().GetDir())
+	fmt.Print(path)
+	return path
 }

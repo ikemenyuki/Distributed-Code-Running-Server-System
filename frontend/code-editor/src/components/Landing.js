@@ -12,44 +12,20 @@ import Homepage from "./Homepage";
 import Signup from "./Signup";
 import Signin from "./Signin";
 import Navbar from './NavBar';
+import { getFiles } from "../utils/api";
 
-const javascriptDefault = `/**
-* Problem: Binary Search: Search a sorted array for a target value.
-*/
-
-// Time: O(log n)
-const binarySearch = (arr, target) => {
- return binarySearchHelper(arr, target, 0, arr.length - 1);
-};
-
-const binarySearchHelper = (arr, target, start, end) => {
- if (start > end) {
-   return false;
- }
- let mid = Math.floor((start + end) / 2);
- if (arr[mid] === target) {
-   return mid;
- }
- if (arr[mid] < target) {
-   return binarySearchHelper(arr, target, mid + 1, end);
- }
- if (arr[mid] > target) {
-   return binarySearchHelper(arr, target, start, mid - 1);
- }
-};
-
-const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const target = 5;
-console.log(binarySearch(arr, target));
-`;
+const javascriptDefault = `// start writing your code here`;
 
 const Landing = () => {
-    const [code, setCode] = useState(javascriptDefault);
+    const [code, setCode] = useState("");
     const [customInput, setCustomInput] = useState("");
     const [outputDetails, setOutputDetails] = useState(null);
     const [processing, setProcessing] = useState(null);
     const [theme, setTheme] = useState("vs-dark");
-    const [language, setLanguage] = useState(languageOptions[0]);
+    const [language, setLanguage] = useState(languageOptions[37]);
+    const [files, setFiles] = useState([]);
+    // const [selectedFile, setSelectedFile] = useState(null);
+    const [output, setOutput] = useState(null);
 
     const enterPress = useKeyPress("Enter");
     const ctrlPress = useKeyPress("Control");
@@ -59,11 +35,22 @@ const Landing = () => {
         setLanguage(sl);
     };
 
+    // load initial files
+    // useEffect(() => {
+    //     getFiles().then((data) => {
+    //         setFiles(data);
+    //     });
+    // }, []);
+
+    useEffect(() => {
+        console.log("files: ", files);
+    }, [files]);
+
     useEffect(() => {
         if (enterPress && ctrlPress) {
             console.log("enterPress", enterPress);
             console.log("ctrlPress", ctrlPress);
-            handleCompile();
+            // handleCompile();
         }
     }, [ctrlPress, enterPress]);
     const onChange = (action, data) => {
@@ -209,9 +196,10 @@ const Landing = () => {
                     element={
                         <Code
                             code={code}
-                            onChange={onChange}
+                            setCode={setCode}
                             language={language}
                             theme={theme}
+                            files={files}
                         />
                     }
                 />

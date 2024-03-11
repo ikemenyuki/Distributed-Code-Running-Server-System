@@ -1,0 +1,21 @@
+.run-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s, transform 0.1s;
+    width: 100%;
+}
+
+.run-button:hover {
+    background-color: #45a049;
+}
+
+.run-button:active {
+    transform: translateY(2px);
+}
