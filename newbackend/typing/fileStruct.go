@@ -8,7 +8,3 @@ type FileStructure struct {
 	UserEmail string          `json:"userEmail,omitempty"`
 	Children  []FileStructure `json:"children,omitempty"`
 }
-
-func getFilePath(filestruct *FileStructure) string {
-	return filestruct.UserEmail + "/" + filestruct.Type + "/" + filestruct.Name
-}

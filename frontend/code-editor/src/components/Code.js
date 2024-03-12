@@ -39,8 +39,7 @@ const Code = ({ code, setCode, language, theme }) => {
         if (ok) {
             // call exec api
             const res = await execCode(currentUser.email, filename);
-            const resBody = await res.json();
-            setResult(resBody['output']);
+            setResult(res['output']);
             setOpenTerminal(true);
         }
     }
