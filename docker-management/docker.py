@@ -15,19 +15,19 @@ class DockerConfig(object):
         self,
         name="DefaultDockerContainer",
         image=None,
-        network=None,
         cores=4,
         memory=2048,
-        volumn=None,
-        id=None,
+        volumn_src=None,
+        volumn_dst=None,
+        disable_network=False,
     ):
         self.name = name
         self.image = image
-        self.network = network
         self.cores = cores
         self.memory = memory
-        self.volumn = volumn
-        self.id = id
+        self.volumn_src = volumn_src
+        self.volumn_dst = volumn_dst
+        self.disable_network = disable_network
 
     def __repr__(self):
         return "Docker container(name: %s, image: %s)" % (self.name, self.image)    
@@ -77,9 +77,11 @@ class Docker(object):
         """startContainer - Start the docker container in the background
             e.g. docker run -d --name test-instance -v /Users/tianxie/thesis/testcases/cpp/:/home/mount test1
         """
-        args = ["docker", "run", "-d", "--name", conf.name, "-v"]
-        args = args + ["%s:%s" % (conf.volumn, "/home/mount")] + [f"--cpus={conf.cores}"] + ["-m", f"{conf.memory}m"] \
-                + ["--network", "none"] + [conf.image]
+        args = ["docker", "run", "-d", "--name", self.conf.name, "-v"]
+        args = args + ["%s:%s" % (self.conf.volumn_src, self.conf.volumn_dst)] + [f"--cpus={self.conf.cores}"] + ["-m", f"{self.conf.memory}m"]
+        if self.conf.disable_network:
+            args = args + ["--network", "none"]
+        args = args + [self.conf.image]
         self.log.debug("Starting container: %s" % str(args))
         out, ret = timeout(args, runTimeout * 2)
         self.log.debug("startContainer returning %d" % ret)
@@ -90,7 +92,7 @@ class Docker(object):
         """execute - execute a command to the docker container
             e.g. docker exec -it test-instance make
         """
-        args = ["docker", "exec", "-it", conf.name]
+        args = ["docker", "exec", "-it", self.conf.name]
         args = args + commandList
         
         self.log.debug("Executing command: %s" % str(args))
@@ -106,7 +108,7 @@ class Docker(object):
         if not self.isRunning:
             self.log.info("Container is already stopped")
             return "", 1
-        args = ["docker", "stop", conf.name]
+        args = ["docker", "stop", self.conf.name]
         self.log.debug("Stopping container: %s" % str(args))
         out, ret = timeout(args, runTimeout * 2)
         self.log.debug("stopContainer returning %d" % ret)
@@ -123,7 +125,7 @@ class Docker(object):
             self.log.info("Container is already running")
             return "", 1
         else:
-            args = ["docker", "start", conf.name]
+            args = ["docker", "start", self.conf.name]
             self.log.debug("Resuming container: %s" % str(args))
             out, ret = timeout(args, runTimeout * 2)
             self.log.debug("resumeContainer returning %d" % ret)
@@ -136,7 +138,7 @@ class Docker(object):
         """cleanup - Stop and remove the docker container
             e.g. docker rm test-instance
         """
-        args = ["docker", "rm", "-f", conf.name]
+        args = ["docker", "rm", "-f", self.conf.name]
         self.log.debug("Cleaning up container: %s" % str(args))
         out, ret = timeout(args, runTimeout * 2)
         self.log.debug("cleanupContainer returning %d" % ret)
@@ -150,7 +152,7 @@ class Docker(object):
         start_time = time.time()
         while self.status(vm)[1] == 0:
             if time.time() - start_time > config.DESTROY_SECS:
-                self.log.error("Failed to safely destroy container %s" % conf.name)
+                self.log.error("Failed to safely destroy container %s" % self.conf.name)
                 return
             self.cleanup(vm)
         return
@@ -158,7 +160,7 @@ class Docker(object):
     def status(self, vm):
         """status - Executes `docker inspect CONTAINER`
         """
-        return timeout(["docker", "inspect", conf.name])
+        return timeout(["docker", "inspect", self.conf.name])
 
     def getImages(self):
         """getImages - Executes `docker images` and returns a list of
@@ -180,10 +182,23 @@ class Docker(object):
 
 
 if __name__ == "__main__":
-    conf = DockerConfig(name="test-instance", image="test1", volumn="/Users/tianxie/thesis/testcases/cpp/")
+    conf = DockerConfig(name="test-instance-cpp", image="cpp_template",
+                        volumn_src="/Users/tianxie/thesis/testcases/cpp/",
+                        volumn_dst="/home/mount")
     container = Docker(conf)
     print(container.execute(["make"])[0])
     print(container.execute(["make", "clean"])[0])
     print(container.execute(["make"])[0])
     print(container.stop()[0])
     print(container.cleanup()[0])
+    
+    time.sleep(2)
+    conf1 = DockerConfig(name="test-instance-java", image="java_template",
+                        volumn_src="/Users/tianxie/thesis/testcases/java/",
+                        volumn_dst="/usr/src/mymaven")
+    container1 = Docker(conf1)
+    print(container1.execute(["mvn", "compile"])[0])
+    print(container1.execute(["mvn", "test"])[0])
+    print(container1.execute(["mvn", "clean"])[0])
+    print(container1.stop()[0])
+    print(container1.cleanup()[0])
