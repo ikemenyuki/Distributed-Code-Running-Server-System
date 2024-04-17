@@ -7,6 +7,10 @@ class FileSystemEntity {
         // Basic serialization that will be extended
         return { name: this.name };
     }
+
+    clone() {
+        return new FileSystemEntity(this.name);
+    }
 }
 
 class File extends FileSystemEntity {
@@ -26,6 +30,11 @@ class File extends FileSystemEntity {
 
     setContent(content) {
         this.content = content;
+    }
+
+    clone() {
+        // Create a new File instance with the same content
+        return new File(this.name, this.content);
     }
 }
 
@@ -49,25 +58,24 @@ class Folder extends FileSystemEntity {
     }
 
     find(path) {
-        if (!path) {
-            return null;
-        }
-
-        // Split the path into parts, removing empty entries (due to leading slashes)
-        // console.log('path', path);
-        // const parts = path.split('/').filter(part => part !== '');
         let current = this;
-
         for (const part of path) {
-            // Find child with the matching name
             const found = current.children.find(child => child.name === part);
             if (!found) {
-                return null;  // No matching entry found in the current folder
+                return null; // No matching entry found in the current folder
             }
             current = found;
         }
-
         return current;
+    }
+
+    clone() {
+        // Create a new Folder instance and clone each child into it
+        const newFolder = new Folder(this.name);
+        this.children.forEach(child => {
+            newFolder.add(child.clone());
+        });
+        return newFolder;
     }
 }
 
