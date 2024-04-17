@@ -151,6 +151,9 @@ const Code = ({ code, setCode, language, theme }) => {
                 // border: '1px solid #ccc',
 
             }}>
+                <div style={{ padding: '5px', backgroundColor: '#232323', color: '#ffffff', fontSize: '13px' }}>
+                Current File: {fileName || "No file selected"}
+                </div>
                 <CodeEditor
                     openTerminal={openTerminal}
                     code={code}
