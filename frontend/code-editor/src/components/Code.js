@@ -100,6 +100,22 @@ const Code = ({ code, setCode, language, theme }) => {
             console.log(JSON.stringify(newFileRoot.children.map(child => child.serialize()), null, 2));
         }
     }
+
+    const updateFileContent = (filePath, content) => {
+        let newFileRoot = fileRoot.clone();  // Clone the fileRoot to preserve methods
+        let fileToUpdate = newFileRoot.find(filePath);  // Assuming filename is the path
+        // console.log(`[updateFileContent] filePath: ${filePath} fileToUpdate.type: ${fileToUpdate.type}`)
+
+        if (fileToUpdate && fileToUpdate.type === "file") {
+            fileToUpdate.setContent(content);  // Update the content of the file
+            setFileRoot(newFileRoot);  // Update the state to trigger re-render
+        }
+    }
+
+    const handleEditorChange = (newContent) => {
+        console.log(`newContent: ${newContent}`)
+        setCode(newContent);  // Assuming you have a state called 'code' for the editor content
+        updateFileContent(fileName, newContent);  // Update the file content in the file system
     }
 
     return (
@@ -125,6 +141,7 @@ const Code = ({ code, setCode, language, theme }) => {
                     language={language?.value}
                     theme={theme}
                     fileSelected={fileSelected}
+                    handleChange={handleEditorChange}
                 />
                 {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}
             </div>

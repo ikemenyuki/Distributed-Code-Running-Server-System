@@ -58,8 +58,9 @@ class Folder extends FileSystemEntity {
     }
 
     find(path) {
+        let parts = Array.isArray(path) ? path : path.split('/'); // assuming path as string is separated by '/'
         let current = this;
-        for (const part of path) {
+        for (const part of parts) {
             const found = current.children.find(child => child.name === part);
             if (!found) {
                 return null; // No matching entry found in the current folder
