@@ -14,7 +14,9 @@ const execCode = async (userEmail, filename) => {
         })
     });
     // get the response header
-    const data = await response();
+
+    console.log(response);
+    const data = await response.json();
     return data;
 }
 
