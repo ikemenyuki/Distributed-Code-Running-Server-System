@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import Editor from "@monaco-editor/react";
 
-const CodeEditor = ({ openTerminal, language, code, setCode, theme }) => {
+const CodeEditor = ({ openTerminal, language, code, setCode, theme, fileSelected }) => {
 
     const handleEditorChange = (code) => {
         setCode(code);
@@ -16,9 +16,9 @@ const CodeEditor = ({ openTerminal, language, code, setCode, theme }) => {
                 language={language || "python"}
                 value={code}
                 theme={theme}
-                defaultValue="# Start coding!"
                 onChange={handleEditorChange}
                 setCode={setCode}
+                options={{ readOnly: !fileSelected }}
             />
         </div>
     );

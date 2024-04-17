@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../css/FileExplorer.css';
-import initialFileStructure from '../constants/fileStructure';
 
-const FileExplorer = () => {
-    const [fileStructure, setFileStructure] = useState(initialFileStructure);
+const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick }) => {
+    const [fileStructure, setFileStructure] = useState([]);
 
     // Function to sort files and directories
     const sortItems = (a, b) => {
@@ -30,12 +29,21 @@ const FileExplorer = () => {
         // Implement delete functionality here
     };
 
+    useEffect(() => {
+        setFileStructure(fileRoot.children.map(child => child.serialize()));
+        // console.log('File Structure:', fileStructure);
+    }, [fileRoot]);
+
     const FileItem = ({ item, path = [] }) => {
         const [isOpen, setIsOpen] = useState(false);
         const isFolder = item.type === 'folder';
 
-        const toggle = () => {
+        const toggle = (e) => {
             if (isFolder) setIsOpen(!isOpen);
+            else {
+                e.stopPropagation();
+                onFileClick(item.name, path);
+            }
         };
 
         const iconClassName = isFolder ? (isOpen ? 'fa-folder-open' : 'fa-folder') : 'fa-file-code-o';
@@ -49,16 +57,17 @@ const FileExplorer = () => {
                     style={{ cursor: 'pointer' }}
                 >
                     <i className={`fa ${iconClassName}`} style={{ marginRight: '5px' }}></i>
-                    {item.name}
+                    {item.name === 'root' ? '/' : item.name}
                     <div className="actions">
-                        <i className="fa fa-plus" onClick={() => addNewItem(isFolder ? 'folder' : 'file', path)}></i>
+                        <i className="fa fa-plus" title="Add File" onClick={() => onAddFileClick(path)}></i>
+                        <i className="fa fa-plus-square" style={{ marginLeft: 10 }} title="Add Folder" onClick={() => onAddFolderClick(path)}></i>
                         <i className="fa fa-trash" onClick={() => deleteItem(path)}></i>
                     </div>
                 </div>
                 {isOpen && isFolder && (
                     <div className="nested">
                         {item.children.sort(sortItems).map((child, index) => (
-                            <FileItem key={index} item={child} path={[...path, child.name]} />
+                            <FileItem key={index} item={child} path={[...path, child.name]} onFileClick={onFileClick} />
                         ))}
                     </div>
                 )}
@@ -69,7 +78,7 @@ const FileExplorer = () => {
     return (
         <div className="file-explorer">
             {fileStructure.sort(sortItems).map((item, index) => (
-                <FileItem key={index} item={item} path={[item.name]} />
+                <FileItem key={index} item={item} path={[item.name]} onFileClick={onFileClick} />
             ))}
         </div>
     );

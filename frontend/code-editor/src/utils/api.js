@@ -2,7 +2,7 @@
 const BACKEND_URL = 'http://localhost:8085';
 
 const execCode = async (userEmail, filename) => {
-    const savePath = '/api/save';
+    const savePath = '/api/execute';
     const response = await fetch(BACKEND_URL + savePath, {
         method: 'POST',
         headers: {
@@ -14,7 +14,7 @@ const execCode = async (userEmail, filename) => {
         })
     });
     // get the response header
-    const data = await response.json();
+    const data = await response();
     return data;
 }
 
@@ -113,8 +113,8 @@ const getFiles = async () => {
 
 // export apis
 export {
-    sendCodeToExec,
     saveCode,
+    execCode,
     loadCode,
     createFile,
     deleteFile,
