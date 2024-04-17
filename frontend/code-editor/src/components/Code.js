@@ -19,7 +19,7 @@ const Code = ({ code, setCode, language, theme }) => {
     const [fileSelected, setFileSelected] = useState(false);
 
     useEffect(() => {
-        const froot = new Folder('root');
+        const froot = new Folder('froot');
         const root = new Folder('root');
         froot.add(root);
         setFileRoot(froot);
@@ -54,38 +54,52 @@ const Code = ({ code, setCode, language, theme }) => {
         }
     }
 
-    const handleFileClick = (fileName, filePath) => {
-        console.log(`File clicked: ${fileName}, Path: ${filePath.join('/')}`);
+    const handleFileClick = (clickedFileName, filePath) => {
+        console.log(`File clicked: ${clickedFileName}, Path: ${filePath.join('/')}`);
         // set code of file content
         const curFileObj = fileRoot.find(filePath);
         setFileSelected(curFileObj.type === 'file');
         if (curFileObj.type === 'file') {
             setCode(curFileObj.content);
-            setFileName(fileName);
+            setFileName(filePath.join('/'));
+            console.log(fileName);
         }
     };
 
     const handleAddFileClick = (filePath) => {
-        const filename = prompt('Enter a filename:'); // Prompt the user for a filename
-        if (!filename) return; // If the user cancels, return early
-        console.log(`Add file clicked: ${filename}, Path: ${filePath.join('/')}`);
-        // add file to folder
-        const curFolder = fileRoot.find(filePath);
-        const newFile = new File(filename);
-        curFolder.add(newFile);
-        setFileRoot(fileRoot);
-        console.log(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2));
+        const filename = prompt('Enter a filename:');
+        if (!filename) return;
+    
+        // Use the clone method to create a deep copy
+        let newFileRoot = fileRoot.clone();
+        const curFolder = newFileRoot.find(filePath);
+        if (curFolder && curFolder.type === "folder") {
+            const newFile = new File(filename);
+            curFolder.add(newFile);
+            setFileRoot(newFileRoot);
+            setFileName(filePath.join('/') + "/" + filename);
+            console.log(fileName);
+        }
     }
-
+    
     const handleAddFolderClick = (filePath) => {
-        const foldername = prompt('Enter a folder name:'); // Prompt the user for a folder name
+        const foldername = prompt('Enter a folder name:');
         if (!foldername) return; // If the user cancels, return early
+    
         console.log(`Add folder clicked: ${foldername}, Path: ${filePath.join('/')}`);
-        // add folder to folder
-        const curFolder = fileRoot.find(filePath);
-        const newFolder = new Folder(foldername);
-        curFolder.add(newFolder);
-        setFileRoot(fileRoot);
+    
+        // Use the clone method to create a deep copy of the fileRoot
+        let newFileRoot = fileRoot.clone();
+        const curFolder = newFileRoot.find(filePath);
+        if (curFolder && curFolder.type === "folder") {
+            const newFolder = new Folder(foldername);
+            curFolder.add(newFolder);
+    
+            // Update the fileRoot state with the newFileRoot which includes the new folder
+            setFileRoot(newFileRoot);
+            console.log(JSON.stringify(newFileRoot.children.map(child => child.serialize()), null, 2));
+        }
+    }
     }
 
     return (
