@@ -29,6 +29,7 @@ class File extends FileSystemEntity {
     }
 
     setContent(content) {
+        console.log(`[setContent] content: ${content}`);
         this.content = content;
     }
 
@@ -58,8 +59,9 @@ class Folder extends FileSystemEntity {
     }
 
     find(path) {
+        let parts = Array.isArray(path) ? path : path.split('/'); // assuming path as string is separated by '/'
         let current = this;
-        for (const part of path) {
+        for (const part of parts) {
             const found = current.children.find(child => child.name === part);
             if (!found) {
                 return null; // No matching entry found in the current folder
@@ -76,6 +78,10 @@ class Folder extends FileSystemEntity {
             newFolder.add(child.clone());
         });
         return newFolder;
+    }
+
+    remove(childName) {
+        this.children = this.children.filter(child => child.name !== childName);
     }
 }
 
