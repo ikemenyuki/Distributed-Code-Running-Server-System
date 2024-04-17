@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../css/FileExplorer.css';
 
-const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick }) => {
+const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick, onDeleteClick }) => {
     const [fileStructure, setFileStructure] = useState([]);
 
     // Function to sort files and directories
@@ -15,18 +15,6 @@ const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick 
         event.preventDefault();
         console.log(`Right-clicked on ${item.name}`);
         // Implement context menu functionality here
-    };
-
-    // Function to add a new file or directory
-    const addNewItem = (type, parentPath = []) => {
-        console.log(`Add new ${type}`);
-        // Implement add functionality here
-    };
-
-    // Function to delete an item
-    const deleteItem = (path) => {
-        console.log(`Delete item at ${path}`);
-        // Implement delete functionality here
     };
 
     useEffect(() => {
@@ -61,7 +49,7 @@ const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick 
                     <div className="actions">
                         <i className="fa fa-plus" title="Add File" onClick={() => onAddFileClick(path)}></i>
                         <i className="fa fa-plus-square" style={{ marginLeft: 10 }} title="Add Folder" onClick={() => onAddFolderClick(path)}></i>
-                        <i className="fa fa-trash" onClick={() => deleteItem(path)}></i>
+                        {item.name !== 'root' && <i className="fa fa-trash" title="Delete" onClick={() => onDeleteClick(path)}></i>}
                     </div>
                 </div>
                 {isOpen && isFolder && (

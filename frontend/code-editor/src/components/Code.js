@@ -62,7 +62,6 @@ const Code = ({ code, setCode, language, theme }) => {
         if (curFileObj.type === 'file') {
             setCode(curFileObj.content);
             setFileName(filePath.join('/'));
-            console.log(fileName);
         }
     };
 
@@ -101,6 +100,24 @@ const Code = ({ code, setCode, language, theme }) => {
         }
     }
 
+    const handleDeleteClick = (filePath) => {
+        console.log(`Delete button clicked: ${filePath.join('/')}`);
+    
+        if (!filePath || filePath.length <= 1) return; // If filePath is empty or undefined or root, do nothing.
+    
+        let newFileRoot = fileRoot.clone();  // Clone the fileRoot to maintain immutability.
+        const parentPath = filePath.slice(0, -1);  // Everything except the last element.
+        const entityName = filePath[filePath.length - 1];  // Last element: name of the file or folder to delete.
+    
+        const parentFolder = newFileRoot.find(parentPath);  // Find the parent folder.
+        if (parentFolder && parentFolder.type === "folder") {
+            parentFolder.remove(entityName);  // Remove the entity from the parent folder.
+            setFileRoot(newFileRoot);  // Update the state with the new file tree.
+        } else {
+            console.error("Parent folder not found or path is incorrect.");
+        }
+    }    
+
     const updateFileContent = (filePath, content) => {
         let newFileRoot = fileRoot.clone();  // Clone the fileRoot to preserve methods
         let fileToUpdate = newFileRoot.find(filePath);  // Assuming filename is the path
@@ -122,7 +139,7 @@ const Code = ({ code, setCode, language, theme }) => {
         <div style={{
             display: 'flex',
         }}>
-            <FileExplorer fileRoot={fileRoot} onFileClick={handleFileClick} onAddFileClick={handleAddFileClick} onAddFolderClick={handleAddFolderClick} />
+            <FileExplorer fileRoot={fileRoot} onFileClick={handleFileClick} onAddFileClick={handleAddFileClick} onAddFolderClick={handleAddFolderClick} onDeleteClick={handleDeleteClick}/>
             <div style={{
                 flex: 1,
                 display: 'flex',

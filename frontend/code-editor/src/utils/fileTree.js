@@ -29,6 +29,7 @@ class File extends FileSystemEntity {
     }
 
     setContent(content) {
+        console.log(`[setContent] content: ${content}`);
         this.content = content;
     }
 
@@ -77,6 +78,10 @@ class Folder extends FileSystemEntity {
             newFolder.add(child.clone());
         });
         return newFolder;
+    }
+
+    remove(childName) {
+        this.children = this.children.filter(child => child.name !== childName);
     }
 }
 
