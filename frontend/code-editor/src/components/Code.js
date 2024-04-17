@@ -8,6 +8,7 @@ import RunButton from "./RunButton";
 import { saveCode, execCode } from "../utils/api";
 import Terminal from "./Terminal";
 import { File, Folder } from '../utils/fileTree';
+import { languageOptions } from "../constants/languageOptions";
 
 const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
@@ -16,6 +17,7 @@ const Code = ({ code, setCode, language, theme }) => {
     const [currFilePath, setCurrFilePath] = useState('');
     const navigate = useNavigate();
     const [fileRoot, setFileRoot] = useState(new Folder('root'));
+    const [selectedLanguage, setSelectedLanguage] = useState(language.value);
 
     useEffect(() => {
         const froot = new Folder('froot');
@@ -158,6 +160,17 @@ const Code = ({ code, setCode, language, theme }) => {
                 <div style={{ padding: '5px', backgroundColor: '#232323', color: '#ffffff', fontSize: '13px' }}>
                 Current File: {currFilePath || "No file selected"}
                 </div>
+                <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    style={{ padding: '5px', marginBottom: '0px' }}
+                >
+                    {languageOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
                 <CodeEditor
                     openTerminal={openTerminal}
                     code={code}
