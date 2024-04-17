@@ -13,10 +13,9 @@ const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
     const [result, setResult] = useState(''); // State to store the result of the code execution
     const [openTerminal, setOpenTerminal] = useState(false); // State to control the visibility of the terminal
-    const [fileName, setFileName] = useState('');
+    const [currFilePath, setCurrFilePath] = useState('');
     const navigate = useNavigate();
     const [fileRoot, setFileRoot] = useState(new Folder('root'));
-    const [fileSelected, setFileSelected] = useState(false);
 
     useEffect(() => {
         const froot = new Folder('froot');
@@ -42,9 +41,9 @@ const Code = ({ code, setCode, language, theme }) => {
     }
 
     const handleSave = async () => {
-        const filename = fileName || prompt('Enter a filename:'); // Prompt the user for a filename
+        const filename = currFilePath || prompt('Enter a filename:'); // Prompt the user for a filename
         if (!filename) return; // If the user cancels, return early
-        setFileName(filename); // Set the filename state
+        setCurrFilePath(filename); // Set the filename state
         const ok = await saveCode(currentUser.email, filename, code, language.value);
         if (ok) {
             // call exec api
@@ -58,10 +57,9 @@ const Code = ({ code, setCode, language, theme }) => {
         console.log(`File clicked: ${clickedFileName}, Path: ${filePath.join('/')}`);
         // set code of file content
         const curFileObj = fileRoot.find(filePath);
-        setFileSelected(curFileObj.type === 'file');
         if (curFileObj.type === 'file') {
             setCode(curFileObj.content);
-            setFileName(filePath.join('/'));
+            setCurrFilePath(filePath.join('/'));
         }
     };
 
@@ -76,8 +74,8 @@ const Code = ({ code, setCode, language, theme }) => {
             const newFile = new File(filename);
             curFolder.add(newFile);
             setFileRoot(newFileRoot);
-            setFileName(filePath.join('/') + "/" + filename);
-            console.log(fileName);
+            setCurrFilePath(filePath.join('/') + "/" + filename);
+            console.log(currFilePath);
         }
     }
     
@@ -100,11 +98,12 @@ const Code = ({ code, setCode, language, theme }) => {
         }
     }
 
-    const handleDeleteClick = (filePath) => {
+    const handleDeleteClick = (event, filePath) => {
         console.log(`Delete button clicked: ${filePath.join('/')}`);
-    
+        event.stopPropagation();  // Stop the event from bubbling up to parent elements
+
         if (!filePath || filePath.length <= 1) return; // If filePath is empty or undefined or root, do nothing.
-    
+
         let newFileRoot = fileRoot.clone();  // Clone the fileRoot to maintain immutability.
         const parentPath = filePath.slice(0, -1);  // Everything except the last element.
         const entityName = filePath[filePath.length - 1];  // Last element: name of the file or folder to delete.
@@ -113,10 +112,15 @@ const Code = ({ code, setCode, language, theme }) => {
         if (parentFolder && parentFolder.type === "folder") {
             parentFolder.remove(entityName);  // Remove the entity from the parent folder.
             setFileRoot(newFileRoot);  // Update the state with the new file tree.
+            // if filePath is current file, unset current file
+            if (filePath.join('/') === currFilePath) {
+                setCurrFilePath('');
+                setCode('');
+            }
         } else {
             console.error("Parent folder not found or path is incorrect.");
         }
-    }    
+    }
 
     const updateFileContent = (filePath, content) => {
         let newFileRoot = fileRoot.clone();  // Clone the fileRoot to preserve methods
@@ -132,7 +136,7 @@ const Code = ({ code, setCode, language, theme }) => {
     const handleEditorChange = (newContent) => {
         console.log(`newContent: ${newContent}`)
         setCode(newContent);  // Assuming you have a state called 'code' for the editor content
-        updateFileContent(fileName, newContent);  // Update the file content in the file system
+        updateFileContent(currFilePath, newContent);  // Update the file content in the file system
     }
 
     return (
@@ -152,7 +156,7 @@ const Code = ({ code, setCode, language, theme }) => {
 
             }}>
                 <div style={{ padding: '5px', backgroundColor: '#232323', color: '#ffffff', fontSize: '13px' }}>
-                Current File: {fileName || "No file selected"}
+                Current File: {currFilePath || "No file selected"}
                 </div>
                 <CodeEditor
                     openTerminal={openTerminal}
@@ -160,7 +164,7 @@ const Code = ({ code, setCode, language, theme }) => {
                     setCode={setCode}
                     language={language?.value}
                     theme={theme}
-                    fileSelected={fileSelected}
+                    fileSelected={currFilePath != ''}
                     handleChange={handleEditorChange}
                 />
                 {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}

@@ -49,7 +49,7 @@ const FileExplorer = ({ fileRoot, onFileClick, onAddFileClick, onAddFolderClick,
                     <div className="actions">
                         <i className="fa fa-plus" title="Add File" onClick={() => onAddFileClick(path)}></i>
                         <i className="fa fa-plus-square" style={{ marginLeft: 10 }} title="Add Folder" onClick={() => onAddFolderClick(path)}></i>
-                        {item.name !== 'root' && <i className="fa fa-trash" title="Delete" onClick={() => onDeleteClick(path)}></i>}
+                        {item.name !== 'root' && <i className="fa fa-trash" title="Delete" onClick={(event) => onDeleteClick(event, path)}></i>}
                     </div>
                 </div>
                 {isOpen && isFolder && (
