@@ -43,15 +43,17 @@ const Code = ({ code, setCode, language, theme }) => {
     }
 
     const handleSave = async () => {
-        const filename = currFilePath || prompt('Enter a filename:'); // Prompt the user for a filename
-        if (!filename) return; // If the user cancels, return early
-        setCurrFilePath(filename); // Set the filename state
-        const ok = await saveCode(currentUser.email, filename, code, language.value);
-        if (ok) {
-            // call exec api
-            const res = await execCode(currentUser.email, filename);
+        const command = prompt('Enter a command to run:'); // Prompt the user for a filename
+        if (!command) return; // If the user cancels, return early
+        console.log(`[handleSave] command: ${command} language: ${selectedLanguage}`)
+
+        // call exec api
+        const res = await saveCode(currentUser.email, command, JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), selectedLanguage);
+        if (res) {
             setResult(res['output']);
             setOpenTerminal(true);
+        } else {
+            setResult('Failed to connect to server.');
         }
     }
 
@@ -136,11 +138,16 @@ const Code = ({ code, setCode, language, theme }) => {
     }
 
     const handleEditorChange = (newContent) => {
-        console.log(`newContent: ${newContent}`)
-        setCode(newContent);  // Assuming you have a state called 'code' for the editor content
-        updateFileContent(currFilePath, newContent);  // Update the file content in the file system
+        console.log(`newContent: ${newContent}`);
+        setCode(newContent);
+        updateFileContent(currFilePath, newContent);
     }
 
+    const handleLanguageChange = (event) => {
+        setSelectedLanguage(event.target.value);
+        console.log(`language change to: ${event.target.value}`);
+    }
+    
     return (
         <div style={{
             display: 'flex',
@@ -162,7 +169,7 @@ const Code = ({ code, setCode, language, theme }) => {
                 </div>
                 <select
                     value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    onChange={(e) => handleLanguageChange(e)}
                     style={{ padding: '5px', marginBottom: '0px' }}
                 >
                     {languageOptions.map(option => (
@@ -175,7 +182,7 @@ const Code = ({ code, setCode, language, theme }) => {
                     openTerminal={openTerminal}
                     code={code}
                     setCode={setCode}
-                    language={language?.value}
+                    language={selectedLanguage}
                     theme={theme}
                     fileSelected={currFilePath != ''}
                     handleChange={handleEditorChange}

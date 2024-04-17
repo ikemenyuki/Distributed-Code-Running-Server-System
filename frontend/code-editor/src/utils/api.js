@@ -1,44 +1,27 @@
 
 const BACKEND_URL = 'http://localhost:8085';
 
-const execCode = async (userEmail, filename) => {
-    const savePath = '/api/execute';
-    const response = await fetch(BACKEND_URL + savePath, {
+const saveCode = async (userEmail, command, content, language) => {
+    const response = await fetch(BACKEND_URL + '/api/execute', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+            content: content,
             userEmail: userEmail,
-            name: filename,
+            command: command,
+            language: language
         })
-    });
-    // get the response header
 
+    });
     console.log(response);
+    
+    if (!response.ok) {
+        return null;
+    }
     const data = await response.json();
     return data;
-}
-
-
-const saveCode = async (userEmail, filename, body, language) => {
-    const savePath = '/api/save';
-    const response = await fetch(BACKEND_URL + savePath, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            content: body,
-            userEmail: userEmail,
-            name: filename,
-            type: language
-        })
-
-    });
-    // get the response header
-    const status = response.status;
-    return status === 200 ? true : false;
 }
 
 const loadCode = async (filename) => {
@@ -116,7 +99,7 @@ const getFiles = async () => {
 // export apis
 export {
     saveCode,
-    execCode,
+    // execCode,
     loadCode,
     createFile,
     deleteFile,
