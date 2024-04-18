@@ -1,13 +1,55 @@
 package httpHandler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"newbackend/typing"
 	"newbackend/utils"
 )
+
+func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error) {
+	// Marshal the requestData into JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new POST request with the JSON body
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the content type to application/json
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request using the http.Client
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode the JSON response into the responseData struct
+	var response typing.JobResult
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		return nil, err
+	}
+
+	// Return the decoded response
+	return &response, nil
+}
 
 // HttpExecFileHandler handles the HTTP request for executing a project.
 // It expects a POST request with a JSON body containing the task structure.
@@ -16,7 +58,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Only allow POST requests
 	if r.Method != http.MethodPost {
-		log.Println("Writing header for Method Not Allowed")
+		log.Println("Only POST method is allowed")
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -32,50 +74,38 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 	// print the parsed body
 	fmt.Println(structure)
 
-	baseDir := utils.CodePath + "/" + structure.UserEmail + "/"
+	projectName := structure.UserEmail
+
+	baseDir := utils.CodePath + "/" + projectName + "/"
 
 	// Create the file structure based on the provided JSON data
+	log.Println("Saving the files")
 	if err := utils.CreateFiles(structure.Content, baseDir); err != nil {
 		fmt.Println("Error saving the files")
 		http.Error(w, "Error saving the files", http.StatusInternalServerError)
 		return
 	}
 
-	// Save the file
-	// filePath := structure.UserEmail + "/" + structure.Name
-	// postBody, _ := json.Marshal(map[string]string{
-	// 	"filepath": filePath,
-	// })
-	// responseBody := bytes.NewBuffer(postBody)
-	// resp, err := http.Post("http://localhost:5001/execute", "application/json", responseBody)
+	// Data to send in the request
+	data := typing.JobStruct{
+		Command: structure.Command,
+	}
 
-	// if err != nil {
-	// 	fmt.Println("1")
-	// 	http.Error(w, "Error executing the file", http.StatusInternalServerError)
-	// 	return
-	// }
-	// fmt.Println(resp, resp.Body)
-	// defer resp.Body.Close()
-	// // Read the response body
-	// respData, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	fmt.Println("2")
-	// 	http.Error(w, "Error reading response from file execution", http.StatusInternalServerError)
-	// 	return
-	// }
+	// Call the sendPostRequest function
+	log.Println("Executing the project")
+	response, err := postJobStruct(SendJobUrl+projectName, data)
+	if err != nil {
+		fmt.Println("Error executing the project:", err)
+		http.Error(w, "Error executing the project: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// // Convert the response body to JSON (assuming it is already JSON)
-	// var jsonData interface{}
-	// fmt.Println(string(respData))
-	// err = json.Unmarshal(respData, &jsonData)
-	// if err != nil {
-	// 	fmt.Println("3")
-	// 	http.Error(w, "Error parsing response from file execution", http.StatusInternalServerError)
-	// 	return
-	// }
+	// Print the response from the server
+	fmt.Println("Response Status:", response.Status)
+	fmt.Println("Output:", response.Output)
 
 	resp := typing.TaskResponse{
-		Output: "Fake Output",
+		Output: response.Output,
 	}
 
 	// Set the header and write the response back
