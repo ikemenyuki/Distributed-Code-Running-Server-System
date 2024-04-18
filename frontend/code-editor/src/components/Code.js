@@ -20,10 +20,16 @@ const Code = ({ code, setCode, language, theme }) => {
     const [selectedLanguage, setSelectedLanguage] = useState(language.value);
 
     useEffect(() => {
-        const froot = new Folder('froot');
-        const root = new Folder('root');
-        froot.add(root);
-        setFileRoot(froot);
+        const loadedFileRoot = loadFileTreeFromLocalStorage();
+        if (loadedFileRoot) {
+            console.log(`loadedFileRoot: ${JSON.stringify(loadedFileRoot.serialize())}`)
+            setFileRoot(loadedFileRoot);
+        } else {
+            const froot = new Folder('froot');
+            const root = new Folder('root');
+            froot.add(root);
+            setFileRoot(froot);
+        }
     }, []);
 
     useEffect(() => {
@@ -32,10 +38,26 @@ const Code = ({ code, setCode, language, theme }) => {
         }
     }, [currentUser, navigate]); // React to changes in currentUser and navigate function
 
+
+    const saveFileTreeToLocalStorage = (fileRoot) => {
+        const serializedFileTree = JSON.stringify(fileRoot.serialize());
+        localStorage.setItem('fileTree', serializedFileTree);
+    };
+
     if (!currentUser) {
         return <p>Loading...</p>; // Show loading text while waiting for auth state
     }
 
+    const loadFileTreeFromLocalStorage = () => {
+        const savedFileTree = localStorage.getItem('fileTree');
+        if (savedFileTree && savedFileTree != '{"name":"root","type":"folder","children":[]}') {
+            console.log(`[loadFileTreeFromLocalStorage] savedFileTree: ${savedFileTree}`)
+            const parsedData = JSON.parse(savedFileTree);
+            return Folder.fromJSON(parsedData);
+        }
+        return null;  // Return null if nothing is found
+    };
+    
     const handleSave = async () => {
         const command = prompt('Enter a command to run:'); // Prompt the user for a filename
         if (!command) return; // If the user cancels, return early
@@ -76,6 +98,7 @@ const Code = ({ code, setCode, language, theme }) => {
             curFolder.add(newFile);
             setFileRoot(newFileRoot);
             setCurrFilePath(filePath.join('/') + "/" + filename);
+            saveFileTreeToLocalStorage(fileRoot);
             console.log(currFilePath);
         }
     }
@@ -95,6 +118,7 @@ const Code = ({ code, setCode, language, theme }) => {
     
             // Update the fileRoot state with the newFileRoot which includes the new folder
             setFileRoot(newFileRoot);
+            saveFileTreeToLocalStorage(newFileRoot);
             console.log(JSON.stringify(newFileRoot.children.map(child => child.serialize()), null, 2));
         }
     }
@@ -113,6 +137,7 @@ const Code = ({ code, setCode, language, theme }) => {
         if (parentFolder && parentFolder.type === "folder") {
             parentFolder.remove(entityName);  // Remove the entity from the parent folder.
             setFileRoot(newFileRoot);  // Update the state with the new file tree.
+            saveFileTreeToLocalStorage(newFileRoot);
             // if filePath is current file, unset current file
             if (filePath.join('/') === currFilePath) {
                 setCurrFilePath('');
@@ -131,11 +156,11 @@ const Code = ({ code, setCode, language, theme }) => {
         if (fileToUpdate && fileToUpdate.type === "file") {
             fileToUpdate.setContent(content);  // Update the content of the file
             setFileRoot(newFileRoot);  // Update the state to trigger re-render
+            saveFileTreeToLocalStorage(newFileRoot);
         }
     }
 
     const handleEditorChange = (newContent) => {
-        console.log(`newContent: ${newContent}`);
         setCode(newContent);
         updateFileContent(currFilePath, newContent);
     }

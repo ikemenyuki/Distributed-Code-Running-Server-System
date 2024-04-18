@@ -22,7 +22,7 @@ const Landing = () => {
     const [outputDetails, setOutputDetails] = useState(null);
     const [processing, setProcessing] = useState(null);
     const [theme, setTheme] = useState("vs-dark");
-    const [language, setLanguage] = useState(languageOptions[13]);
+    const [language, setLanguage] = useState(languageOptions[12]);
     const [files, setFiles] = useState([]);
     // const [selectedFile, setSelectedFile] = useState(null);
     const [output, setOutput] = useState(null);
