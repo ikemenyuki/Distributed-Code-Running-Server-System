@@ -1,44 +1,50 @@
 
 const BACKEND_URL = 'http://localhost:8085';
+const LLM_URL = 'http://localhost:5003';
 
-const execCode = async (userEmail, filename) => {
-    const savePath = '/api/execute';
-    const response = await fetch(BACKEND_URL + savePath, {
+const saveCode = async (userEmail, command, content, language) => {
+    const response = await fetch(BACKEND_URL + '/api/execute', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+            content: content,
             userEmail: userEmail,
-            name: filename,
+            command: command,
+            language: language
         })
-    });
-    // get the response header
 
-    console.log(response);
+    });
+    console.log(`[saveCode] response: ${response}`);
+    
+    if (!response.ok) {
+        return null;
+    }
     const data = await response.json();
     return data;
 }
 
-
-const saveCode = async (userEmail, filename, body, language) => {
-    const savePath = '/api/save';
-    const response = await fetch(BACKEND_URL + savePath, {
+const askAi = async (code, command, errorMessage) => {
+    const response = await fetch(LLM_URL + '/ask-LLM', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            content: body,
-            userEmail: userEmail,
-            name: filename,
-            type: language
+            code: code,
+            command: command,
+            output: errorMessage
         })
 
     });
-    // get the response header
-    const status = response.status;
-    return status === 200 ? true : false;
+    console.log(`[askAi] response: ${response}`);
+    
+    if (!response.ok) {
+        return null;
+    }
+    const data = await response.json();
+    return data;
 }
 
 const loadCode = async (filename) => {
@@ -116,7 +122,8 @@ const getFiles = async () => {
 // export apis
 export {
     saveCode,
-    execCode,
+    askAi,
+    // execCode,
     loadCode,
     createFile,
     deleteFile,

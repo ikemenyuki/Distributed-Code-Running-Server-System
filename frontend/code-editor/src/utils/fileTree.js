@@ -28,8 +28,11 @@ class File extends FileSystemEntity {
         };
     }
 
+    static fromJSON(data) {
+        return new File(data.name, data.content);
+    }
+
     setContent(content) {
-        console.log(`[setContent] content: ${content}`);
         this.content = content;
     }
 
@@ -56,6 +59,18 @@ class Folder extends FileSystemEntity {
             type: this.type,
             children: this.children.map(child => child.serialize())
         };
+    }
+
+    static fromJSON(data) {
+        const folder = new Folder(data.name);
+        data.children.forEach(childData => {
+            if (childData.type === 'file') {
+                folder.add(File.fromJSON(childData));
+            } else {
+                folder.add(Folder.fromJSON(childData));
+            }
+        });
+        return folder;
     }
 
     find(path) {

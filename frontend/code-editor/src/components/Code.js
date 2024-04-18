@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext"; // Adjust the path as necessary
 import CodeEditor from "./CodeEditor";
 import FileExplorer from "./FileExplorer";
-import FriendsList from "./FriendsList";
+import ChatBot from "./ChatBot";
 import RunButton from "./RunButton";
-import { saveCode, execCode } from "../utils/api";
+import { saveCode, askAi } from "../utils/api";
 import Terminal from "./Terminal";
 import { File, Folder } from '../utils/fileTree';
+import { languageOptions } from "../constants/languageOptions";
 
 const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
@@ -16,19 +17,20 @@ const Code = ({ code, setCode, language, theme }) => {
     const [currFilePath, setCurrFilePath] = useState('');
     const navigate = useNavigate();
     const [fileRoot, setFileRoot] = useState(new Folder('root'));
+    const [selectedLanguage, setSelectedLanguage] = useState(language.value);
 
     useEffect(() => {
-        const froot = new Folder('froot');
-        const root = new Folder('root');
-        froot.add(root);
-        setFileRoot(froot);
-    }, []);
-
-    useEffect(() => {
-        if (result) {
-            setOpenTerminal(true); // Open the terminal if there is backend data
+        const loadedFileRoot = loadFileTreeFromLocalStorage();
+        if (loadedFileRoot) {
+            console.log(`loadedFileRoot: ${JSON.stringify(loadedFileRoot.serialize())}`)
+            setFileRoot(loadedFileRoot);
+        } else {
+            const froot = new Folder('froot');
+            const root = new Folder('root');
+            froot.add(root);
+            setFileRoot(froot);
         }
-    }, [result]);
+    }, []);
 
     useEffect(() => {
         if (!currentUser) {
@@ -36,20 +38,57 @@ const Code = ({ code, setCode, language, theme }) => {
         }
     }, [currentUser, navigate]); // React to changes in currentUser and navigate function
 
+
+    const saveFileTreeToLocalStorage = (fileRoot) => {
+        const serializedFileTree = JSON.stringify(fileRoot.serialize());
+        localStorage.setItem('fileTree', serializedFileTree);
+    };
+
     if (!currentUser) {
         return <p>Loading...</p>; // Show loading text while waiting for auth state
     }
 
+    const loadFileTreeFromLocalStorage = () => {
+        const savedFileTree = localStorage.getItem('fileTree');
+        if (savedFileTree && savedFileTree != '{"name":"root","type":"folder","children":[]}') {
+            console.log(`[loadFileTreeFromLocalStorage] savedFileTree: ${savedFileTree}`)
+            const parsedData = JSON.parse(savedFileTree);
+            return Folder.fromJSON(parsedData);
+        }
+        return null;  // Return null if nothing is found
+    };
+    
     const handleSave = async () => {
-        const filename = currFilePath || prompt('Enter a filename:'); // Prompt the user for a filename
-        if (!filename) return; // If the user cancels, return early
-        setCurrFilePath(filename); // Set the filename state
-        const ok = await saveCode(currentUser.email, filename, code, language.value);
-        if (ok) {
-            // call exec api
-            const res = await execCode(currentUser.email, filename);
+        const command = prompt('Enter a command to run:'); // Prompt the user for a filename
+        if (!command) return; // If the user cancels, return early
+        console.log(`[handleSave] command: ${command} language: ${selectedLanguage}`)
+
+        // call exec api
+        const res = await saveCode(currentUser.email, command, JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), selectedLanguage);
+        if (res) {
+            console.log(`Updating terminal result to: ${res['output']}`);
             setResult(res['output']);
             setOpenTerminal(true);
+        } else {
+            console.log(`Updating terminal result`);
+            setResult('Failed to connect to server.');
+            setOpenTerminal(true);
+        }
+    }
+
+    const handleAskAI = async (message) => {
+        console.log(`[handleAskAI] message: ${message}`)
+        if (message.startsWith('/debug')) {
+            // const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), command, result);
+            const res = { ans: "Debug mode activated!" };
+            if (res) {
+                return res['ans'];
+            } else {
+                return "Failed to connect to AI."
+            }
+        } else {
+            // A normal command
+            return "TODO"
         }
     }
 
@@ -75,6 +114,7 @@ const Code = ({ code, setCode, language, theme }) => {
             curFolder.add(newFile);
             setFileRoot(newFileRoot);
             setCurrFilePath(filePath.join('/') + "/" + filename);
+            saveFileTreeToLocalStorage(fileRoot);
             console.log(currFilePath);
         }
     }
@@ -94,6 +134,7 @@ const Code = ({ code, setCode, language, theme }) => {
     
             // Update the fileRoot state with the newFileRoot which includes the new folder
             setFileRoot(newFileRoot);
+            saveFileTreeToLocalStorage(newFileRoot);
             console.log(JSON.stringify(newFileRoot.children.map(child => child.serialize()), null, 2));
         }
     }
@@ -112,6 +153,7 @@ const Code = ({ code, setCode, language, theme }) => {
         if (parentFolder && parentFolder.type === "folder") {
             parentFolder.remove(entityName);  // Remove the entity from the parent folder.
             setFileRoot(newFileRoot);  // Update the state with the new file tree.
+            saveFileTreeToLocalStorage(newFileRoot);
             // if filePath is current file, unset current file
             if (filePath.join('/') === currFilePath) {
                 setCurrFilePath('');
@@ -130,15 +172,20 @@ const Code = ({ code, setCode, language, theme }) => {
         if (fileToUpdate && fileToUpdate.type === "file") {
             fileToUpdate.setContent(content);  // Update the content of the file
             setFileRoot(newFileRoot);  // Update the state to trigger re-render
+            saveFileTreeToLocalStorage(newFileRoot);
         }
     }
 
     const handleEditorChange = (newContent) => {
-        console.log(`newContent: ${newContent}`)
-        setCode(newContent);  // Assuming you have a state called 'code' for the editor content
-        updateFileContent(currFilePath, newContent);  // Update the file content in the file system
+        setCode(newContent);
+        updateFileContent(currFilePath, newContent);
     }
 
+    const handleLanguageChange = (event) => {
+        setSelectedLanguage(event.target.value);
+        console.log(`language change to: ${event.target.value}`);
+    }
+    
     return (
         <div style={{
             display: 'flex',
@@ -158,11 +205,22 @@ const Code = ({ code, setCode, language, theme }) => {
                 <div style={{ padding: '5px', backgroundColor: '#232323', color: '#ffffff', fontSize: '13px' }}>
                 Current File: {currFilePath || "No file selected"}
                 </div>
+                <select
+                    value={selectedLanguage}
+                    onChange={(e) => handleLanguageChange(e)}
+                    style={{ padding: '5px', marginBottom: '0px' }}
+                >
+                    {languageOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
                 <CodeEditor
                     openTerminal={openTerminal}
                     code={code}
                     setCode={setCode}
-                    language={language?.value}
+                    language={selectedLanguage}
                     theme={theme}
                     fileSelected={currFilePath != ''}
                     handleChange={handleEditorChange}
@@ -181,7 +239,7 @@ const Code = ({ code, setCode, language, theme }) => {
             }}>
                 <div style={{ height: 'calc(100% - 38.5px)' }}>
                     <RunButton handleSave={handleSave} />
-                    <FriendsList />
+                    <ChatBot handleAskAI={handleAskAI}/>
                 </div>
 
             </div>
