@@ -27,12 +27,6 @@ const Code = ({ code, setCode, language, theme }) => {
     }, []);
 
     useEffect(() => {
-        if (result) {
-            setOpenTerminal(true); // Open the terminal if there is backend data
-        }
-    }, [result]);
-
-    useEffect(() => {
         if (!currentUser) {
             navigate('/login'); // Redirect to login if not logged in
         }
@@ -50,10 +44,13 @@ const Code = ({ code, setCode, language, theme }) => {
         // call exec api
         const res = await saveCode(currentUser.email, command, JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), selectedLanguage);
         if (res) {
+            console.log(`Updating terminal result to: ${res['output']}`);
             setResult(res['output']);
             setOpenTerminal(true);
         } else {
+            console.log(`Updating terminal result`);
             setResult('Failed to connect to server.');
+            setOpenTerminal(true);
         }
     }
 
