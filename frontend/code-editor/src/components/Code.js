@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext"; // Adjust the path as necessary
 import CodeEditor from "./CodeEditor";
 import FileExplorer from "./FileExplorer";
-import FriendsList from "./FriendsList";
+import ChatBot from "./ChatBot";
 import RunButton from "./RunButton";
-import { saveCode, execCode } from "../utils/api";
+import { saveCode, askAi } from "../utils/api";
 import Terminal from "./Terminal";
 import { File, Folder } from '../utils/fileTree';
 import { languageOptions } from "../constants/languageOptions";
@@ -73,6 +73,22 @@ const Code = ({ code, setCode, language, theme }) => {
             console.log(`Updating terminal result`);
             setResult('Failed to connect to server.');
             setOpenTerminal(true);
+        }
+    }
+
+    const handleAskAI = async (message) => {
+        console.log(`[handleAskAI] message: ${message}`)
+        if (message.startsWith('/debug')) {
+            // const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), command, result);
+            const res = { ans: "Debug mode activated!" };
+            if (res) {
+                return res['ans'];
+            } else {
+                return "Failed to connect to AI."
+            }
+        } else {
+            // A normal command
+            return "TODO"
         }
     }
 
@@ -223,7 +239,7 @@ const Code = ({ code, setCode, language, theme }) => {
             }}>
                 <div style={{ height: 'calc(100% - 38.5px)' }}>
                     <RunButton handleSave={handleSave} />
-                    <FriendsList />
+                    <ChatBot handleAskAI={handleAskAI}/>
                 </div>
 
             </div>

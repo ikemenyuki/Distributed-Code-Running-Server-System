@@ -1,5 +1,6 @@
 
 const BACKEND_URL = 'http://localhost:8085';
+const LLM_URL = 'http://localhost:5003';
 
 const saveCode = async (userEmail, command, content, language) => {
     const response = await fetch(BACKEND_URL + '/api/execute', {
@@ -15,7 +16,29 @@ const saveCode = async (userEmail, command, content, language) => {
         })
 
     });
-    console.log(response);
+    console.log(`[saveCode] response: ${response}`);
+    
+    if (!response.ok) {
+        return null;
+    }
+    const data = await response.json();
+    return data;
+}
+
+const askAi = async (code, command, errorMessage) => {
+    const response = await fetch(LLM_URL + '/ask-LLM', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code: code,
+            command: command,
+            output: errorMessage
+        })
+
+    });
+    console.log(`[askAi] response: ${response}`);
     
     if (!response.ok) {
         return null;
@@ -99,6 +122,7 @@ const getFiles = async () => {
 // export apis
 export {
     saveCode,
+    askAi,
     // execCode,
     loadCode,
     createFile,
