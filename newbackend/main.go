@@ -8,7 +8,6 @@ import (
 
 func main() {
 	http.Handle("/api/execute", http.HandlerFunc(httpHandler.HttpExecFileHandler))
-	http.Handle("/api/save", http.HandlerFunc(httpHandler.HttpSaveFileHandler))
 	http.Handle("/api/create", http.HandlerFunc(httpHandler.HttpCreateFileHandler))
 	http.Handle("/api/delete", http.HandlerFunc(httpHandler.HttpDeleteFileHandler))
 	http.Handle("/api/getAllFiles", http.HandlerFunc(httpHandler.HttpGetAllFilesHandler))
