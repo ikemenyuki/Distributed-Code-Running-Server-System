@@ -11,7 +11,7 @@ const saveCode = async (userEmail, command, content, language) => {
         body: JSON.stringify({
             content: content,
             userEmail: userEmail,
-            command: [command],
+            command: ["cd ./root && " + command],
             language: language
         })
 

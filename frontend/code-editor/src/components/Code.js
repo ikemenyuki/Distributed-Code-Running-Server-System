@@ -50,7 +50,7 @@ const Code = ({ code, setCode, language, theme }) => {
 
     const loadFileTreeFromLocalStorage = () => {
         const savedFileTree = localStorage.getItem('fileTree');
-        if (savedFileTree && savedFileTree != '{"name":"root","type":"folder","children":[]}') {
+        if (savedFileTree && savedFileTree !== '{"name":"root","type":"folder","children":[]}') {
             console.log(`[loadFileTreeFromLocalStorage] savedFileTree: ${savedFileTree}`)
             const parsedData = JSON.parse(savedFileTree);
             return Folder.fromJSON(parsedData);
@@ -222,7 +222,7 @@ const Code = ({ code, setCode, language, theme }) => {
                     setCode={setCode}
                     language={selectedLanguage}
                     theme={theme}
-                    fileSelected={currFilePath != ''}
+                    fileSelected={currFilePath !== ''}
                     handleChange={handleEditorChange}
                 />
                 {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}
