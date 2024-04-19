@@ -81,7 +81,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 	// Create the file structure based on the provided JSON data
 	log.Println("Saving the files")
 	if err := utils.CreateFiles(structure.Content, baseDir); err != nil {
-		fmt.Println("Error saving the files")
+		fmt.Println("Error saving the files" + err.Error())
 		http.Error(w, "Error saving the files", http.StatusInternalServerError)
 		return
 	}
