@@ -75,7 +75,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 	// print the parsed body
 	fmt.Println(structure)
 
-	projectName := strings.Replace(structure.UserEmail, "@", "_", -1)
+	projectName := strings.Replace(structure.UserEmail, "@", "-", -1)
 
 	baseDir := utils.CodePath + "/" + projectName + "/"
 
