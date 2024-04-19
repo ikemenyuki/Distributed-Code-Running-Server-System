@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"newbackend/typing"
 	"newbackend/utils"
+	"strings"
 )
 
 func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error) {
@@ -74,7 +75,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 	// print the parsed body
 	fmt.Println(structure)
 
-	projectName := structure.UserEmail
+	projectName := strings.Replace(structure.UserEmail, "@", "_", -1)
 
 	baseDir := utils.CodePath + "/" + projectName + "/"
 
