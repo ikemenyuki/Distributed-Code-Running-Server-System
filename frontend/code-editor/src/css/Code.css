@@ -1,0 +1,54 @@
+/* General Layout */
+.page-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 80px);
+    width: 100%;
+}
+
+.file-explorer {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.editor-container, .tools-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.tools-container {
+    /* Styles for right side tools panel */
+    width: 500px;
+    display: flex;
+    align-items: stretch;
+}
+
+.editor-container {
+    flex: 1;
+    padding: 5px;
+    background-color: #232323;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.editor-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.select-language {
+    padding: 5px;
+    margin-bottom: 0;
+    background-color: #232323;
+    color: #ffffff;
+}
+
+.code-editor, .terminal {
+    flex-grow: 1; /* Allows these components to fill available space */
+}
+
+/* Additional specific styles */
