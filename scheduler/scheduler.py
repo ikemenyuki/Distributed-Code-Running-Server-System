@@ -1,7 +1,10 @@
 
 from flask import Flask, request, jsonify
 from launchJob import create_job, monitor_job
-from kubernetes import config
+from jobObjects import DCRSSJob
+from jobQueue import JobQueue
+from jobManager import JobManager
+import kubernetes
 
 import uuid
 
@@ -50,8 +53,23 @@ def submit(projectId):
         
     except Exception as e:
         jsonify({'error': str(e)}), 500
-
+        
+@app.route('/submit1/<projectId>', methods=['POST'])
+def submit1(projectId):
+    unique_id = str(uuid.uuid4())
+    job_name = projectId + "-" + unique_id
+    out_path = "/data/" + projectId + "/out-" + unique_id
+    data = request.get_json()
+    user_command_list = data.get('command', []) # e.g. ["make", "clean"]
+    system_command_list = ["/bin/sh", "-c", "cd /data/" + projectId + " && " + " ".join(user_command_list) + ">" + out_path + " 2>&1"]
+    
+    job = DCRSSJob(outputFile=out_path, name=job_name, input=system_command_list)
+    jobQueue.add(job)
+    return jsonify({'status': 'submitted'}), 200
 
 if __name__ == '__main__':
-    config.load_incluster_config()
+    kubernetes.config.load_incluster_config()
+    jobQueue = JobQueue()
+    JobManager(jobQueue).start()
     app.run(debug=True, port=5000, host='0.0.0.0')
+    
