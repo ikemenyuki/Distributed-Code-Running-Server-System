@@ -5,13 +5,14 @@ import pickle
 
 redisConnection = None
 
-
 def getRedisConnection():
     global redisConnection
     if redisConnection is None:
         redisConnection = redis.StrictRedis(
             host=config.REDIS_HOSTNAME, port=config.REDIS_PORT, db=0
         )
+        redisConnection.flushall()
+        print("Redis data flushed on initial connection.")
 
     return redisConnection
 
@@ -123,25 +124,44 @@ class DCRSSJob(object):
     
     def __init__(
         self,
-        outputFile=None,
         name=None,
+        date=None,
         input=[],
         timeout=0,
     ):  
-        self.outputFile = outputFile
         self.name = name
+        self.date = date
         self.input = input
         self.timeout = timeout
+        
         self.assigned = False
-        # self.trace = []
+        self.status = False # True: success, False: failed
         self._remoteLocation = None
+    
+    def makeSuccess(self):
+        print("makeSuccess")
+        self.syncRemote()
+        self.status = True
+        self.updateRemote()
+    
+    def makeFailed(self):
+        print("makeFailed")
+        self.syncRemote()
+        self.status = False
+        self.updateRemote()
+    
+    def isFailed(self):
+        self.syncRemote()
+        return not self.status
 
     def makeAssigned(self):
+        print("makeAssigned")
         self.syncRemote()
         self.assigned = True
         self.updateRemote()
 
     def makeUnassigned(self):
+        print("makeUnassigned")
         self.syncRemote()
         self.assigned = False
         self.updateRemote()
@@ -149,11 +169,6 @@ class DCRSSJob(object):
     def isNotAssigned(self):
         self.syncRemote()
         return not self.assigned
-
-    # def appendTrace(self, trace_str):
-    #     self.syncRemote()
-    #     self.trace.append(trace_str)
-    #     self.updateRemote()
 
     def setId(self, new_id):
         self.id = new_id
@@ -181,9 +196,9 @@ class DCRSSJob(object):
             dictionary.set(key, self)
 
     def updateSelf(self, other_job):
-        self.input = other_job.input
-        self.outputFile = other_job.outputFile
         self.name = other_job.name
+        self.date = other_job.date
+        self.input = other_job.input
         self.timeout = other_job.timeout
         self.assigned = other_job.assigned
-        # self.trace = other_job.trace
+        self.status = other_job.status

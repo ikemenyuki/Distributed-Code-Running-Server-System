@@ -1,71 +1,69 @@
 
-from flask import Flask, request, jsonify
-from launchJob import create_job, monitor_job
-from jobObjects import DCRSSJob
+from utils import DCRSSJob
 from jobQueue import JobQueue
 from jobManager import JobManager
-import kubernetes
+from flask import Flask, request, jsonify, render_template
+# from launchJob import create_job, monitor_job
 
-import uuid
+import os
+import kubernetes
+import datetime
 
 app = Flask(__name__)
 
 # GET endpoint that accepts a query parameter
-@app.route('/greet', methods=['GET'])
+@app.route('/', methods=['GET'])
 def greet():
-    # Retrieve the name from the query string
-    name = request.args.get('name', 'Guest')
-    return f'Hello, {name}!'
+    return f'Welcome to Distributed Code Running Server System\'s backend scheduler!'
 
-# POST endpoint that accepts JSON data
-@app.route('/sum', methods=['POST'])
-def sum_numbers():
-    # Retrieve data from the JSON body of the request
-    data = request.get_json()
-    # Calculate the sum of the numbers provided in the JSON data
-    total = sum(data.get('numbers', []))
-    return jsonify({
-        'total': total,
-        'status': 'success'
-    })
+# submit a job to the job queue
+@app.route('/submit/<name>', methods=['POST'])
+def submit(name):
+    date  = datetime.datetime.now().ctime().replace(' ', '-').replace(':', '-')
+    input = request.get_json().get('command', []) # e.g. ["make", "clean"]
+    
+    jobId = jobQueue.add(DCRSSJob(name=name, date=date, input=input))
+    if -1 == jobId:
+        return jsonify({'status': 'failed', 'reason': 'JobQueue is full'}), 400
+    else:
+        return jsonify({'status': 'submitted', 'job id': jobId}), 200
 
-@app.route('/submit/<projectId>', methods=['POST'])
-def submit(projectId):
-    unique_id = str(uuid.uuid4())
-    job_name = projectId + "-" + unique_id
-    out_path = "/data/" + projectId + "/out-" + unique_id
-    data = request.get_json()
-    user_command_list = data.get('command', []) # e.g. ["make", "clean"]
-    system_command_list = ["/bin/sh", "-c", "cd /data/" + projectId + " && " + " ".join(user_command_list) + ">" + out_path + " 2>&1"]
-    print(system_command_list)
+@app.route('/check/<id>', methods=['GET'])
+def check(id):
+    status, name, date = jobQueue.checkStatusAndOutput(id)
+    if status == -1:
+        return jsonify({'status': 'pending', 'message': 'your code is pending to run'}), 200
+    elif status == 1:
+        return jsonify({'status': 'failed', 'message': 'failed to run your code, please submit again'}), 400
+    elif status == 0:
+        with open(f'/data/{name}/out-{name}-{date}', 'r') as f:
+            output = f.read()
+        return jsonify({'status': 'success', 'output': output}), 200
+    else:
+        return jsonify({'status': status, 'message': 'this should not happen'}), 400
+
+@app.route('/check-vis/<id>', methods=['GET'])
+def check_vis(id):
+    status, name, date = jobQueue.checkStatusAndOutput(id)
+    result = {}
+    result['status'] = status
+    if status == -1:
+        result['out'] = ['your code is pending to run']
+    elif status == 1:
+        result['out'] = ['failed to run your code, please submit again']
+    elif status == 0:
+        with open(f'/data/{name}/out-{name}-{date}', 'r') as f:
+            outlines = f.readlines()
+        result['out'] = outlines
+    else:
+        result['out'] = ['this should not happen']
+    return render_template('output.html', result=result)
     
-    try:
-        with open("/data/logs/debug.txt", "a") as f:
-            f.write("Job name: " + job_name + "\n")
-            f.write("Command: " + " ".join(system_command_list) + "\n")
-        create_job("tianx1/dcrss-worker:v1", run_command=system_command_list, job_name=job_name)
-        if (monitor_job(job_name) == 0):
-            with open(out_path, 'r') as f:
-                output = f.read()
-            return jsonify({'status': 'completed', 'output': output}), 200
-        else:
-            return jsonify({'status': 'failure'}), 500
-        
-    except Exception as e:
-        jsonify({'error': str(e)}), 500
-        
-@app.route('/submit1/<projectId>', methods=['POST'])
-def submit1(projectId):
-    unique_id = str(uuid.uuid4())
-    job_name = projectId + "-" + unique_id
-    out_path = "/data/" + projectId + "/out-" + unique_id
-    data = request.get_json()
-    user_command_list = data.get('command', []) # e.g. ["make", "clean"]
-    system_command_list = ["/bin/sh", "-c", "cd /data/" + projectId + " && " + " ".join(user_command_list) + ">" + out_path + " 2>&1"]
-    
-    job = DCRSSJob(outputFile=out_path, name=job_name, input=system_command_list)
-    jobQueue.add(job)
-    return jsonify({'status': 'submitted'}), 200
+@app.route('/status', methods=['GET'])
+def status():
+    info = jobQueue.getInfo()
+    return render_template('status.html', info=info)
+
 
 if __name__ == '__main__':
     kubernetes.config.load_incluster_config()
