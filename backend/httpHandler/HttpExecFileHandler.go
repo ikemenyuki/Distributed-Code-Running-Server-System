@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"newbackend/typing"
 	"newbackend/utils"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -82,6 +84,30 @@ func getJobOutput(JobId string) (*typing.JobOutput, error) {
 	return &responseBody, nil
 }
 
+// deleteAllFiles deletes all files under the provided baseDir.
+func deleteAllFiles(baseDir string) error {
+	// Walk through the directory tree starting from baseDir
+	err := filepath.Walk(baseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err // Return the error immediately
+		}
+		if !info.IsDir() { // Check if the FileInfo denotes a file
+			// Attempt to remove the file
+			err := os.Remove(path)
+			if err != nil {
+				return fmt.Errorf("failed to remove %s: %w", path, err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("error walking through %s: %w", baseDir, err)
+	}
+
+	return nil
+}
+
 // HttpExecFileHandler handles the HTTP request for executing a project.
 // It expects a POST request with a JSON body containing the task structure.
 func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +136,13 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 	baseDir := CodePath + "/" + projectName + "/"
 
 	// Create the file structure based on the provided JSON data
+	log.Println("Deleting files")
+	if err := deleteAllFiles(baseDir); err != nil {
+		fmt.Printf("Error: %s\n", err)
+	} else {
+		fmt.Println("All files have been successfully deleted.")
+	}
+
 	log.Println("Saving the files")
 	if err := utils.CreateFiles(structure.Content, baseDir); err != nil {
 		fmt.Println("Error saving the files" + err.Error())
