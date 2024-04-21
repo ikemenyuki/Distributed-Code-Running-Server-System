@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { parsePath, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext"; // Adjust the path as necessary
 import CodeEditor from "./CodeEditor";
 import FileExplorer from "./FileExplorer";
@@ -16,6 +16,7 @@ const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
     const [result, setResult] = useState(''); // State to store the result of the code execution
     const [openTerminal, setOpenTerminal] = useState(false); // State to control the visibility of the terminal
+    const [updateTrigger, setUpdateTrigger] = useState(0); // State to trigger re-render
     const [currFilePath, setCurrFilePath] = useState('');
     const navigate = useNavigate();
     const [fileRoot, setFileRoot] = useState(new Folder('root'));
@@ -59,7 +60,7 @@ const Code = ({ code, setCode, language, theme }) => {
         }
         return null;  // Return null if nothing is found
     };
-    
+
     const handleSave = async () => {
         const command = prompt('Enter a command to run:'); // Prompt the user for a filename
         if (!command) return; // If the user cancels, return early
@@ -71,6 +72,7 @@ const Code = ({ code, setCode, language, theme }) => {
             console.log(`Updating terminal result to: ${res['output']}`);
             setResult(res['output']);
             setOpenTerminal(true);
+            setUpdateTrigger(prev => prev + 1);
         } else {
             console.log(`Updating terminal result`);
             setResult('Failed to connect to server.');
@@ -112,7 +114,7 @@ const Code = ({ code, setCode, language, theme }) => {
     const handleAddFileClick = (filePath) => {
         const filename = prompt('Enter a filename:');
         if (!filename) return;
-    
+
         // Use the clone method to create a deep copy
         let newFileRoot = fileRoot.clone();
         const curFolder = newFileRoot.find(filePath);
@@ -125,20 +127,20 @@ const Code = ({ code, setCode, language, theme }) => {
             console.log(currFilePath);
         }
     }
-    
+
     const handleAddFolderClick = (filePath) => {
         const foldername = prompt('Enter a folder name:');
         if (!foldername) return; // If the user cancels, return early
-    
+
         console.log(`Add folder clicked: ${foldername}, Path: ${filePath.join('/')}`);
-    
+
         // Use the clone method to create a deep copy of the fileRoot
         let newFileRoot = fileRoot.clone();
         const curFolder = newFileRoot.find(filePath);
         if (curFolder && curFolder.type === "folder") {
             const newFolder = new Folder(foldername);
             curFolder.add(newFolder);
-    
+
             // Update the fileRoot state with the newFileRoot which includes the new folder
             setFileRoot(newFileRoot);
             saveFileTreeToLocalStorage(newFileRoot);
@@ -155,7 +157,7 @@ const Code = ({ code, setCode, language, theme }) => {
         let newFileRoot = fileRoot.clone();  // Clone the fileRoot to maintain immutability.
         const parentPath = filePath.slice(0, -1);  // Everything except the last element.
         const entityName = filePath[filePath.length - 1];  // Last element: name of the file or folder to delete.
-    
+
         const parentFolder = newFileRoot.find(parentPath);  // Find the parent folder.
         if (parentFolder && parentFolder.type === "folder") {
             parentFolder.remove(entityName);  // Remove the entity from the parent folder.
@@ -192,45 +194,45 @@ const Code = ({ code, setCode, language, theme }) => {
         setSelectedLanguage(event.target.value);
         console.log(`language change to: ${event.target.value}`);
     }
-    
+
     return (
-    <div class="page-container">
-        <div class="file-explorer">
-            <FileExplorer fileRoot={fileRoot} onFileClick={handleFileClick} onAddFileClick={handleAddFileClick} onAddFolderClick={handleAddFolderClick} onDeleteClick={handleDeleteClick}/>
-        </div>
-        <div class="editor-container">
-            <div class="editor-info">
-                <div>
-                    Current File: {currFilePath || "No file selected"}
-                </div>
-                <select
-                    class="select-language"
-                    value={selectedLanguage}
-                    onChange={(e) => handleLanguageChange(e)}
-                >
-                    {languageOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
+        <div class="page-container">
+            <div class="file-explorer">
+                <FileExplorer fileRoot={fileRoot} onFileClick={handleFileClick} onAddFileClick={handleAddFileClick} onAddFolderClick={handleAddFolderClick} onDeleteClick={handleDeleteClick} />
             </div>
-            <CodeEditor
-                openTerminal={openTerminal}
-                code={code}
-                setCode={setCode}
-                language={selectedLanguage}
-                theme={theme}
-                fileSelected={currFilePath !== ''}
-                handleChange={handleEditorChange}
-            />
-            {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}
+            <div class="editor-container">
+                <div class="editor-info">
+                    <div>
+                        Current File: {currFilePath || "No file selected"}
+                    </div>
+                    <select
+                        class="select-language"
+                        value={selectedLanguage}
+                        onChange={(e) => handleLanguageChange(e)}
+                    >
+                        {languageOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <CodeEditor
+                    openTerminal={openTerminal}
+                    code={code}
+                    setCode={setCode}
+                    language={selectedLanguage}
+                    theme={theme}
+                    fileSelected={currFilePath !== ''}
+                    handleChange={handleEditorChange}
+                />
+                {openTerminal && <Terminal updateTrigger={updateTrigger} setOpenTerminal={setOpenTerminal} backendData={result} />}
+            </div>
+            <div class="tools-container">
+                <RunButton handleSave={handleSave} />
+                <ChatBot handleAskAI={handleAskAI} />
+            </div>
         </div>
-        <div class="tools-container">
-            <RunButton handleSave={handleSave} />
-            <ChatBot handleAskAI={handleAskAI}/>
-        </div>
-    </div>
     );
 }
 

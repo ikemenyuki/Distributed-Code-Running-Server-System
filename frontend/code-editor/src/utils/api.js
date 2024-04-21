@@ -1,6 +1,5 @@
-
-const BACKEND_URL = 'http://localhost:8085';
-const LLM_URL = 'http://localhost:5003';
+const BACKEND_URL = 'http://34.70.178.243:80';
+const LLM_URL = 'http://35.226.42.92:80';
 
 const saveCode = async (userEmail, command, content, language) => {
     const response = await fetch(BACKEND_URL + '/api/execute', {
@@ -17,7 +16,7 @@ const saveCode = async (userEmail, command, content, language) => {
 
     });
     console.log(`[saveCode] response: ${response}`);
-    
+
     if (!response.ok) {
         return null;
     }
@@ -39,7 +38,7 @@ const askAi = async (code, command, errorMessage) => {
 
     });
     console.log(`[askAi] response: ${response}`);
-    
+
     if (!response.ok) {
         return null;
     }
@@ -60,7 +59,7 @@ const chatAi = async (code, message) => {
 
     });
     console.log(`[askAi] response: ${response}`);
-    
+
     if (!response.ok) {
         return null;
     }

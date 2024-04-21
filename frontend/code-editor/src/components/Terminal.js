@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../css/Terminal.css'; // Make sure to create a Terminal.css file for styling
 
-const Terminal = ({ setOpenTerminal, backendData }) => {
+const Terminal = ({ updateTrigger, setOpenTerminal, backendData }) => {
     const [terminalLines, setTerminalLines] = useState(['Welcome to the code output terminal!']);
     const endOfTerminalRef = useRef(null);
     const lastBackendDataRef = useRef();
 
     useEffect(() => {
-        // Only update if the data is different from the last known value
-        if (backendData && backendData !== lastBackendDataRef.current) {
-            console.log("Updating terminal lines with:", backendData);
-            setTerminalLines(prevLines => [...prevLines, "Your current code output: " + backendData]);
-            lastBackendDataRef.current = backendData;
-        }
-    }, [backendData]);
+        console.log("Updating terminal lines with:", backendData);
+        setTerminalLines(prevLines => [...prevLines, "Your current code output:\n" + backendData]);
+        lastBackendDataRef.current = backendData;
+    }, [updateTrigger]);
 
     useEffect(() => {
         // Scroll to the bottom of the terminal whenever lines are added
