@@ -4,6 +4,7 @@ metadata:
   name: scheduler-service
 spec:
   type: LoadBalancer
+  loadBalancerIP: "34.172.52.165"
   ports:
     - port: 80
       targetPort: 5000
