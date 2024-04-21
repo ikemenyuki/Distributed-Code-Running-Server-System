@@ -5,7 +5,7 @@ import CodeEditor from "./CodeEditor";
 import FileExplorer from "./FileExplorer";
 import ChatBot from "./ChatBot";
 import RunButton from "./RunButton";
-import { saveCode, askAi } from "../utils/api";
+import { saveCode, askAi, chatAi } from "../utils/api";
 import Terminal from "./Terminal";
 import { File, Folder } from '../utils/fileTree';
 import { languageOptions } from "../constants/languageOptions";
@@ -81,16 +81,21 @@ const Code = ({ code, setCode, language, theme }) => {
     const handleAskAI = async (message) => {
         console.log(`[handleAskAI] message: ${message}`)
         if (message.startsWith('/debug')) {
-            // const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), command, result);
-            const res = { ans: "Debug mode activated!" };
+            const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), "Run", result);
+            // const res = { ans: "Debug mode activated!" };
             if (res) {
                 return res['ans'];
             } else {
                 return "Failed to connect to AI."
             }
         } else {
-            // A normal command
-            return "TODO"
+            const res = await chatAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), message);
+            // const res = { ans: "Debug mode activated!" };
+            if (res) {
+                return res['ans'];
+            } else {
+                return "Failed to connect to AI."
+            }
         }
     }
 

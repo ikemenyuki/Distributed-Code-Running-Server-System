@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import '../css/ChatBot.css';
 
-const ChatBot = ({handleAskAI}) => {
+const ChatBot = ({ handleAskAI }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
 
@@ -9,7 +10,7 @@ const ChatBot = ({handleAskAI}) => {
         if (newMessage.trim() === '') {
             return;
         }
-    
+
         // Check if the message starts with '/'
         if (newMessage.startsWith('/')) {
             // A command
@@ -17,13 +18,14 @@ const ChatBot = ({handleAskAI}) => {
             // Normal message sending
             setMessages(messages => [...messages, { id: Date.now(), text: newMessage }]);
         }
+
         try {
-            // Assuming handleAskAI returns a promise, await its result
             const aiResponse = await handleAskAI(newMessage);
-            setMessages(messages => [...messages, { id: Date.now(), text: `AI Response: ${aiResponse}` }]);
+            setMessages(messages => [...messages, { id: Date.now(), text: `**AI Response**: ${aiResponse}` }]);
         } catch (error) {
             setMessages(messages => [...messages, { id: Date.now(), text: 'Failed to communicate with AI.' }]);
         }
+
         setNewMessage('');
     };
 
@@ -35,7 +37,9 @@ const ChatBot = ({handleAskAI}) => {
         <div className="chat-bot-container">
             <div className="message-window">
                 {messages.map(msg => (
-                    <div key={msg.id} className="message">{msg.text}</div>
+                    <div key={msg.id} className="message">
+                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    </div>
                 ))}
             </div>
             <div className="input-area">
