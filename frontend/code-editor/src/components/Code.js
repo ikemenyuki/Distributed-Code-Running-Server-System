@@ -9,6 +9,8 @@ import { saveCode, askAi } from "../utils/api";
 import Terminal from "./Terminal";
 import { File, Folder } from '../utils/fileTree';
 import { languageOptions } from "../constants/languageOptions";
+import '../css/Code.css'; // Ensure the CSS is imported
+
 
 const Code = ({ code, setCode, language, theme }) => {
     const { currentUser } = useContext(AuthContext); // Use AuthContext to get the current user
@@ -187,28 +189,19 @@ const Code = ({ code, setCode, language, theme }) => {
     }
     
     return (
-        <div style={{
-            display: 'flex',
-        }}>
+    <div class="page-container">
+        <div class="file-explorer">
             <FileExplorer fileRoot={fileRoot} onFileClick={handleFileClick} onAddFileClick={handleAddFileClick} onAddFolderClick={handleAddFolderClick} onDeleteClick={handleDeleteClick}/>
-            <div style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                // alignItems: 'flex-end',
-                height: 'calc(100vh - 80px)',
-                width: '100%',
-                // border: '1px solid #ccc',
-
-            }}>
-                <div style={{ padding: '5px', backgroundColor: '#232323', color: '#ffffff', fontSize: '13px' }}>
-                Current File: {currFilePath || "No file selected"}
+        </div>
+        <div class="editor-container">
+            <div class="editor-info">
+                <div>
+                    Current File: {currFilePath || "No file selected"}
                 </div>
                 <select
+                    class="select-language"
                     value={selectedLanguage}
                     onChange={(e) => handleLanguageChange(e)}
-                    style={{ padding: '5px', marginBottom: '0px' }}
                 >
                     {languageOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -216,34 +209,23 @@ const Code = ({ code, setCode, language, theme }) => {
                         </option>
                     ))}
                 </select>
-                <CodeEditor
-                    openTerminal={openTerminal}
-                    code={code}
-                    setCode={setCode}
-                    language={selectedLanguage}
-                    theme={theme}
-                    fileSelected={currFilePath !== ''}
-                    handleChange={handleEditorChange}
-                />
-                {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}
             </div>
-            <div style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                // alignItems: 'flex-end',
-                height: 'calc(100vh - 80px)',
-                // border: '1px solid #ccc',
-
-            }}>
-                <div style={{ height: 'calc(100% - 38.5px)' }}>
-                    <RunButton handleSave={handleSave} />
-                    <ChatBot handleAskAI={handleAskAI}/>
-                </div>
-
-            </div>
+            <CodeEditor
+                openTerminal={openTerminal}
+                code={code}
+                setCode={setCode}
+                language={selectedLanguage}
+                theme={theme}
+                fileSelected={currFilePath !== ''}
+                handleChange={handleEditorChange}
+            />
+            {openTerminal && <Terminal setOpenTerminal={setOpenTerminal} backendData={result} />}
         </div>
+        <div class="tools-container">
+            <RunButton handleSave={handleSave} />
+            <ChatBot handleAskAI={handleAskAI}/>
+        </div>
+    </div>
     );
 }
 

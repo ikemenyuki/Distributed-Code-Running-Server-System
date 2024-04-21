@@ -9,7 +9,10 @@ import (
 	"net/http"
 	"newbackend/typing"
 	"newbackend/utils"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error) {
@@ -52,6 +55,59 @@ func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error)
 	return &response, nil
 }
 
+func getJobOutput(JobId string) (*typing.JobOutput, error) {
+	// Sending the GET request
+	response, err := http.Get(GetJobUrl + JobId)
+	if err != nil {
+		// Handle error
+		fmt.Println("Error getting job output:", err)
+		return nil, err
+	}
+
+	defer response.Body.Close() // Close the response body when the function returns
+
+	// Reading the response body
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		// Handle error
+		fmt.Println("Error reading getting job response:", err)
+		return nil, err
+	}
+
+	// Decode the JSON response into the responseData struct
+	var responseBody typing.JobOutput
+	if err := json.Unmarshal(body, &responseBody); err != nil {
+		return nil, err
+	}
+
+	// Return the decoded response
+	return &responseBody, nil
+}
+
+// deleteAllFiles deletes all files under the provided baseDir.
+func deleteAllFiles(baseDir string) error {
+	// Walk through the directory tree starting from baseDir
+	err := filepath.Walk(baseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err // Return the error immediately
+		}
+		if !info.IsDir() { // Check if the FileInfo denotes a file
+			// Attempt to remove the file
+			err := os.Remove(path)
+			if err != nil {
+				return fmt.Errorf("failed to remove %s: %w", path, err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("error walking through %s: %w", baseDir, err)
+	}
+
+	return nil
+}
+
 // HttpExecFileHandler handles the HTTP request for executing a project.
 // It expects a POST request with a JSON body containing the task structure.
 func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +133,16 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	projectName := strings.Replace(structure.UserEmail, "@", "-", -1)
 
-	baseDir := utils.CodePath + "/" + projectName + "/"
+	baseDir := CodePath + "/" + projectName + "/"
 
 	// Create the file structure based on the provided JSON data
+	log.Println("Deleting files")
+	if err := deleteAllFiles(baseDir); err != nil {
+		fmt.Printf("Error: %s\n", err)
+	} else {
+		fmt.Println("All files have been successfully deleted.")
+	}
+
 	log.Println("Saving the files")
 	if err := utils.CreateFiles(structure.Content, baseDir); err != nil {
 		fmt.Println("Error saving the files" + err.Error())
@@ -103,10 +166,37 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Print the response from the server
 	fmt.Println("Response Status:", response.Status)
-	fmt.Println("Output:", response.Output)
+	fmt.Println("Job ID:", response.JobId)
 
+	// Get the output
+	log.Println(("Getting Output"))
+	outputResponse, err := getJobOutput(response.JobId)
+	if err != nil {
+		fmt.Println("Error getting Output:", err)
+		http.Error(w, "Error getting Output: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Loop until the response status is "success"
+	for outputResponse.Status != "success" {
+		log.Println("Checking output status again...") // Logging the retry
+		time.Sleep(time.Second * 5)                    // Wait for 5 seconds before retrying
+
+		outputResponse, err = getJobOutput(response.JobId) // Attempt to get output again
+		if err != nil {
+			fmt.Println("Error getting Output:", err)
+			http.Error(w, "Error getting Output: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Print Output
+	fmt.Println("Response Status:", outputResponse.Status)
+	fmt.Println("Output:", outputResponse.Output)
+
+	// response to frontend
 	resp := typing.TaskResponse{
-		Output: response.Output,
+		Output: outputResponse.Output,
 	}
 
 	// Set the header and write the response back
