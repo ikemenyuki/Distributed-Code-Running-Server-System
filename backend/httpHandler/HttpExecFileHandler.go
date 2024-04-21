@@ -10,6 +10,7 @@ import (
 	"newbackend/typing"
 	"newbackend/utils"
 	"strings"
+	"time"
 )
 
 func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error) {
@@ -142,6 +143,20 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error getting Output: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Loop until the response status is "success"
+	for outputResponse.Status != "success" {
+		log.Println("Checking output status again...") // Logging the retry
+		time.Sleep(time.Second * 5)                    // Wait for 5 seconds before retrying
+
+		outputResponse, err = getJobOutput(response.JobId) // Attempt to get output again
+		if err != nil {
+			fmt.Println("Error getting Output:", err)
+			http.Error(w, "Error getting Output: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	// Print Output
 	fmt.Println("Response Status:", outputResponse.Status)
 	fmt.Println("Output:", outputResponse.Output)
