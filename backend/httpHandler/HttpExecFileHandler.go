@@ -179,6 +179,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Loop until the response status is "success"
 	for outputResponse.Status == "pending" {
+		log.Println(outputResponse.Status)
 		log.Println("Checking output status again...") // Logging the retry
 		time.Sleep(time.Second * 5)                    // Wait for 5 seconds before retrying
 
