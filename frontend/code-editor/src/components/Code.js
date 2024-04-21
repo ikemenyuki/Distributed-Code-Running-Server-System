@@ -81,8 +81,8 @@ const Code = ({ code, setCode, language, theme }) => {
     const handleAskAI = async (message) => {
         console.log(`[handleAskAI] message: ${message}`)
         if (message.startsWith('/debug')) {
-            // const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), command, result);
-            const res = { ans: "Debug mode activated!" };
+            const res = await askAi(JSON.stringify(fileRoot.children.map(child => child.serialize()), null, 2), command, result);
+            // const res = { ans: "Debug mode activated!" };
             if (res) {
                 return res['ans'];
             } else {
