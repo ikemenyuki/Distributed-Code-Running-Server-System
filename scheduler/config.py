@@ -1,0 +1,8 @@
+
+REDIS_HOSTNAME = "10.107.199.75"
+
+REDIS_PORT = 6379
+
+MAX_JOBID = 1000
+
+WORKER_IMAGE = "tianx1/dcrss-worker:v1"
