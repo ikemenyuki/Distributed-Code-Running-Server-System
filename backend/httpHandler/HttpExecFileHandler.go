@@ -77,7 +77,7 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	projectName := strings.Replace(structure.UserEmail, "@", "-", -1)
 
-	baseDir := utils.CodePath + "/" + projectName + "/"
+	baseDir := CodePath + "/" + projectName + "/"
 
 	// Create the file structure based on the provided JSON data
 	log.Println("Saving the files")

@@ -1,4 +1,5 @@
 package httpHandler
 
 const pythonDirPath = "./data/python"
-const SendJobUrl = "http://34.171.123.100:80/submit/"
+const SendJobUrl = "http://34.172.52.165:80/submit/"
+const CodePath = "/data"
