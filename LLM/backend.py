@@ -9,7 +9,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="path/to/key.json" # place the key JSON file in the same folder as your notebook
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./key.json" # place the key JSON file in the same folder as your notebook
 
 PROJECT_ID = "august-craft-412319" # use your project id
 REGION = "us-central1"  #
