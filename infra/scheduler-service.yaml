@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-service
+spec:
+  type: LoadBalancer
+  loadBalancerIP: "34.172.52.165"
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: scheduler
