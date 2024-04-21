@@ -52,6 +52,35 @@ func postJobStruct(url string, data typing.JobStruct) (*typing.JobResult, error)
 	return &response, nil
 }
 
+func getJobOutput(JobId string) (*typing.JobOutput, error) {
+	// Sending the GET request
+	response, err := http.Get(GetJobUrl + JobId)
+	if err != nil {
+		// Handle error
+		fmt.Println("Error getting job output:", err)
+		return nil, err
+	}
+
+	defer response.Body.Close() // Close the response body when the function returns
+
+	// Reading the response body
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		// Handle error
+		fmt.Println("Error reading getting job response:", err)
+		return nil, err
+	}
+
+	// Decode the JSON response into the responseData struct
+	var responseBody typing.JobOutput
+	if err := json.Unmarshal(body, &responseBody); err != nil {
+		return nil, err
+	}
+
+	// Return the decoded response
+	return &responseBody, nil
+}
+
 // HttpExecFileHandler handles the HTTP request for executing a project.
 // It expects a POST request with a JSON body containing the task structure.
 func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +132,23 @@ func HttpExecFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Print the response from the server
 	fmt.Println("Response Status:", response.Status)
-	fmt.Println("Output:", response.Output)
+	fmt.Println("Job ID:", response.JobId)
 
+	// Get the output
+	log.Println(("Getting Output"))
+	outputResponse, err := getJobOutput(response.JobId)
+	if err != nil {
+		fmt.Println("Error getting Output:", err)
+		http.Error(w, "Error getting Output: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Print Output
+	fmt.Println("Response Status:", outputResponse.Status)
+	fmt.Println("Output:", outputResponse.Output)
+
+	// response to frontend
 	resp := typing.TaskResponse{
-		Output: response.Output,
+		Output: outputResponse.Output,
 	}
 
 	// Set the header and write the response back
