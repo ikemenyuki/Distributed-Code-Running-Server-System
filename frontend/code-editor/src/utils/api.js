@@ -47,6 +47,27 @@ const askAi = async (code, command, errorMessage) => {
     return data;
 }
 
+const chatAi = async (code, message) => {
+    const response = await fetch(LLM_URL + '/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code: code,
+            message: message
+        })
+
+    });
+    console.log(`[askAi] response: ${response}`);
+    
+    if (!response.ok) {
+        return null;
+    }
+    const data = await response.json();
+    return data;
+}
+
 const loadCode = async (filename) => {
     const loadPath = '/notebook/' + filename + '/load';
     const response = await fetch(BACKEND_URL + loadPath, {
@@ -123,7 +144,7 @@ const getFiles = async () => {
 export {
     saveCode,
     askAi,
-    // execCode,
+    chatAi,
     loadCode,
     createFile,
     deleteFile,

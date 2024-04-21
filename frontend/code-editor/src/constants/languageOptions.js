@@ -74,9 +74,9 @@ export const languageOptions = [
     },
     {
         id: 71,
-        name: "Python (3.8.1)",
-        label: "Python (3.8.1)",
-        value: "python",
+        name: "Python3 (3.6.9)",
+        label: "Python3 (3.6.9)",
+        value: "python3",
     },
     // {
     //     id: 80,
