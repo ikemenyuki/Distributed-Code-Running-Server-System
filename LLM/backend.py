@@ -1,7 +1,7 @@
 import os
 import vertexai
 from langchain_google_vertexai import VertexAI
-langchain_core.prompts.PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from flask import Flask, request, jsonify
 from flask_cors import CORS
