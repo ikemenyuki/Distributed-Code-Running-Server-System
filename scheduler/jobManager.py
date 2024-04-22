@@ -74,7 +74,7 @@ class JobManager(object):
             "cp out-{name}-{date} /data/{name}/out-{name}-{date}".format(name=job.name, date=job.date)  # Copy output back
         ]
         # Join all commands with '&&' ensuring all must succeed
-        final_command = " && ".join(commands)
+        final_command = " ; ".join(commands)
         runCommandList.append(final_command)
         
         self.log.debug("Generated run command: %s" % runCommandList)
