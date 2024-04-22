@@ -7,9 +7,11 @@ const Terminal = ({ updateTrigger, setOpenTerminal, backendData }) => {
     const lastBackendDataRef = useRef();
 
     useEffect(() => {
-        console.log("Updating terminal lines with:", backendData);
-        setTerminalLines(prevLines => [...prevLines, "Your current code output:\n" + backendData]);
-        lastBackendDataRef.current = backendData;
+        if (backendData && backendData !== lastBackendDataRef.current) {
+            console.log("Updating terminal lines with:", backendData);
+            setTerminalLines(prevLines => [...prevLines, "Your current code output:\n" + backendData]);
+            lastBackendDataRef.current = backendData;
+        }
     }, [updateTrigger]);
 
     useEffect(() => {
