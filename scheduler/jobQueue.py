@@ -1,4 +1,7 @@
 
+# this file is inspired by :
+#   https://github.com/autolab/Tango/blob/master/jobQueue.py
+
 import threading
 import logging
 import config

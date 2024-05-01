@@ -1,4 +1,7 @@
 
+# this file is inspired by :
+#   https://github.com/autolab/Tango/blob/master/jobManager.py
+
 import copy
 import time
 import logging

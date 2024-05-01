@@ -1,4 +1,7 @@
 
+# this file is inspired by :
+#   https://github.com/autolab/Tango/blob/master/tangoObjects.py
+
 import redis
 import config
 import pickle

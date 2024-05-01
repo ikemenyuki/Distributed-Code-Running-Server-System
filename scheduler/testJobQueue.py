@@ -1,4 +1,7 @@
 
+# this file is inspired by :
+#   https://github.com/autolab/Tango/blob/master/tests/testJobQueue.py
+
 import unittest
 import redis
 import config
